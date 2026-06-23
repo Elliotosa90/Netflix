@@ -584,7 +584,23 @@ function userRegister() {
         saveData().then(function(){err.textContent='';suc.textContent='Account created! Sign in now.';['regUsername','regFullname','regEmail','regPhone','regPassword','regReferral'].forEach(function(i){document.getElementById(i).value='';});});
     });
 }
-function userLogout() { currentUser=null;currentUserData=null;isAdminLoggedIn=false;document.getElementById('authContainer').classList.remove('hidden');document.getElementById('userDashboard').classList.remove('active');document.getElementById('loginUsername').value='';document.getElementById('loginPassword') }
+function userLogout() {
+    // Remove saved login session
+    clearSession();
+
+    // Clear current user data
+    currentUser = null;
+    currentUserData = null;
+    isAdminLoggedIn = false;
+
+    // Show login screen
+    document.getElementById('authContainer').classList.remove('hidden');
+    document.getElementById('userDashboard').classList.remove('active');
+
+    // Clear login form
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+}
 
 // ============================================================
 // ADMIN LOGIN
