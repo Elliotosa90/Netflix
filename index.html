@@ -537,6 +537,7 @@ function userLogin() {
         var user=appData.users[u]; if(!user||user.password!==p){e.textContent='Invalid credentials.';return;}
         if(user.status==='closed'){e.textContent='Account closed.';return;}
         isAdminLoggedIn=false; currentUser=u; currentUserData=user;
+        saveSession();
         applyDailyInterest().then(function(){enterDashboard('user');});
     });
 }
@@ -583,7 +584,7 @@ function userRegister() {
         saveData().then(function(){err.textContent='';suc.textContent='Account created! Sign in now.';['regUsername','regFullname','regEmail','regPhone','regPassword','regReferral'].forEach(function(i){document.getElementById(i).value='';});});
     });
 }
-function userLogout() { currentUser=null;currentUserData=null;isAdminLoggedIn=false;document.getElementById('authContainer').classList.remove('hidden');document.getElementById('userDashboard').classList.remove('active');document.getElementById('loginUsername').value='';document.getElementById('loginPassword').value=''; }
+function userLogout() { currentUser=null;currentUserData=null;isAdminLoggedIn=false;document.getElementById('authContainer').classList.remove('hidden');document.getElementById('userDashboard').classList.remove('active');document.getElementById('loginUsername').value='';document.getElementById('loginPassword') }
 
 // ============================================================
 // ADMIN LOGIN
