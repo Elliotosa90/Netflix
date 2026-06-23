@@ -584,22 +584,7 @@ function userRegister() {
         saveData().then(function(){err.textContent='';suc.textContent='Account created! Sign in now.';['regUsername','regFullname','regEmail','regPhone','regPassword','regReferral'].forEach(function(i){document.getElementById(i).value='';});});
     });
 }
-function userLogout() {
-    // Remove saved login session
-    clearSession();
 
-    // Clear current user data
-    currentUser = null;
-    currentUserData = null;
-    isAdminLoggedIn = false;
-
-    // Show login screen
-    document.getElementById('authContainer').classList.remove('hidden');
-    document.getElementById('userDashboard').classList.remove('active');
-
-    // Clear login form
-    document.getElementById('loginUsername').value = '';
-    document.getElementById('loginPassword').value = '';
 }
 
 // ============================================================
@@ -612,7 +597,8 @@ function adminLogin(){
     if(!u||!p){e.textContent='Enter credentials.';return;}
     loadData().then(function(){if(!appData){e.textContent='Failed.';return;}if(u===appData.admin.username&&p===appData.admin.password){isAdminLoggedIn=true;currentUser='admin';currentUserData=null;closeAdminLogin();enterDashboard('admin');}else{e.textContent='Invalid admin credentials.';}});
 }
-
+function userLogout() { currentUser=null;currentUserData=null;isAdminLoggedIn=false;document.getElementById('authContainer').classList.remove('hidden');document.getElementById('userDashboard').classList.remove('active');document.getElementById('loginUsername').value='';document.getElementById('loginPassword') }
+ 
 // ============================================================
 // DASHBOARD
 // ============================================================
