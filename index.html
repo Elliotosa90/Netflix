@@ -1,1253 +1,415 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetflixZone - Investment Platform</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --red: #E50914; --dark-red: #B20710; --black: #000000;
-            --bg: #141414; --card: #1a1a1a; --card-hover: #2a2a2a;
-            --border: #333; --text: #fff; --text2: #b3b3b3; --text3: #808080;
-            --green: #46d369; --blue: #0071eb; --yellow: #e6b91e; --purple: #b37feb;
-        }
-        body { font-family: 'Helvetica Neue',Arial,sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
-        .auth-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--black); padding: 20px; position: relative; }
-        .auth-container::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(229,9,20,0.15) 0%, transparent 70%); pointer-events: none; }
-        .auth-box { background: rgba(0,0,0,0.75); border-radius: 8px; padding: 60px 68px 40px; width: 100%; max-width: 450px; position: relative; }
-        .auth-box .logo { text-align: center; margin-bottom: 28px; }
-        .auth-box .logo h1 { font-size: 36px; color: var(--red); font-weight: 800; text-transform: uppercase; letter-spacing: -1px; }
-        .auth-box .logo h1 span { color: var(--text); font-weight: 300; }
-        .auth-box .logo p { font-size: 12px; color: var(--text3); margin-top: 2px; letter-spacing: 2px; text-transform: uppercase; }
-        .auth-box h2 { font-size: 22px; font-weight: 600; margin-bottom: 24px; color: var(--text); }
-        .auth-box input,.auth-box select { width: 100%; padding: 14px 16px; margin-bottom: 14px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 15px; outline: none; }
-        .auth-box input:focus { border-color: var(--text); background: var(--card-hover); }
-        .auth-box select option { background: var(--card); }
-        .auth-box .btn-primary { width: 100%; padding: 14px; background: var(--red); color: var(--text); font-weight: 700; font-size: 16px; border: none; border-radius: 4px; cursor: pointer; }
-        .auth-box .btn-primary:hover { background: var(--dark-red); }
-        .auth-box .link { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text3); }
-        .auth-box .link a { color: var(--text); cursor: pointer; text-decoration: none; }
-        .auth-box .link a:hover { text-decoration: underline; }
-        .auth-box .error { color: var(--red); font-size: 13px; margin-bottom: 10px; text-align: center; }
-        .auth-box .success { color: var(--green); font-size: 13px; margin-bottom: 10px; text-align: center; }
-        .auth-tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid var(--border); }
-        .auth-tabs div { flex: 1; text-align: center; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; margin-bottom: -2px; }
-        .auth-tabs div.active { color: var(--text); border-bottom-color: var(--red); }
-        .admin-hidden-link { text-align: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
-        .admin-hidden-link a { color: var(--border); font-size: 11px; text-decoration: none; cursor: pointer; user-select: none; }
-        .admin-hidden-link a:hover { color: var(--text3); }
-        .admin-login-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 999; align-items: center; justify-content: center; padding: 20px; }
-        .admin-login-overlay.active { display: flex; }
-        .admin-login-box { background: var(--black); border: 1px solid var(--border); border-radius: 8px; padding: 36px; width: 100%; max-width: 380px; }
-        .admin-login-box h3 { font-size: 20px; color: var(--text); margin-bottom: 4px; }
-        .admin-login-box p.sub { font-size: 12px; color: var(--text3); margin-bottom: 20px; }
-        .admin-login-box input { width: 100%; padding: 12px 14px; margin-bottom: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; outline: none; }
-        .admin-login-box input:focus { border-color: var(--blue); }
-        .admin-login-box .btn-admin { width: 100%; padding: 12px; background: var(--red); color: var(--text); font-weight: 600; border: none; border-radius: 4px; cursor: pointer; }
-        .admin-login-box .btn-admin:hover { background: var(--dark-red); }
-        .admin-login-box .admin-error { color: var(--red); font-size: 13px; margin-bottom: 10px; text-align: center; }
-        .admin-login-box .close-admin { float: right; background: none; border: none; color: var(--text3); font-size: 22px; cursor: pointer; }
-        .dashboard { display: none; }
-        .dashboard.active { display: block; }
-        .topbar { background: var(--black); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .topbar .brand { font-size: 24px; font-weight: 800; color: var(--red); text-transform: uppercase; letter-spacing: -0.5px; }
-        .topbar .brand span { color: var(--text); font-weight: 300; }
-        .topbar .user-menu { display: flex; align-items: center; gap: 18px; }
-        .topbar .user-menu .username { font-size: 14px; color: var(--text2); }
-        .topbar .user-menu button { padding: 8px 18px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 13px; }
-        .topbar .user-menu button:hover { background: var(--card-hover); }
-        .topbar .user-menu .logout-btn { background: transparent; border-color: var(--red); color: var(--red); }
-        .topbar .user-menu .logout-btn:hover { background: var(--red); color: var(--text); }
-        .dashboard-content { max-width: 1200px; margin: 0 auto; padding: 28px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
-        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 22px; }
-        .stat-card:hover { border-color: var(--text3); transform: translateY(-2px); }
-        .stat-card .label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
-        .stat-card .value { font-size: 28px; font-weight: 700; color: var(--text); }
-        .stat-card .green { color: var(--green); }
-        .status-badge.active { background: rgba(70,211,105,0.15); color: var(--green); padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
-        .status-badge.frozen { background: rgba(230,185,30,0.15); color: var(--yellow); padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
-        .status-badge.closed { background: rgba(229,9,20,0.15); color: var(--red); padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
-        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
-        .quick-action { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; text-align: center; cursor: pointer; }
-        .quick-action:hover { border-color: var(--red); background: var(--card-hover); transform: translateY(-2px); }
-        .quick-action .icon { font-size: 30px; margin-bottom: 8px; }
-        .quick-action h3 { font-size: 15px; color: var(--text); font-weight: 600; margin-bottom: 2px; }
-        .quick-action p { font-size: 12px; color: var(--text3); }
-        .quick-action.disabled { opacity: 0.4; cursor: not-allowed; }
-        .quick-action.disabled:hover { border-color: var(--border); background: var(--card); transform: none; }
-        .section-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 16px; margin-top: 32px; }
-        .section-title:first-child { margin-top: 0; }
-        .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 28px; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        table th { background: var(--black); text-align: left; padding: 14px 18px; color: var(--text3); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
-        table td { padding: 14px 18px; border-bottom: 1px solid var(--border); }
-        table tr:last-child td { border-bottom: none; }
-        table tr:hover td { background: var(--card-hover); }
-        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .badge.deposit { background: rgba(70,211,105,0.15); color: var(--green); }
-        .badge.profit { background: rgba(0,113,235,0.15); color: var(--blue); }
-        .badge.withdraw { background: rgba(229,9,20,0.15); color: var(--red); }
-        .badge.bank_withdraw { background: rgba(0,113,235,0.15); color: var(--blue); }
-        .badge.pending { background: rgba(230,185,30,0.15); color: var(--yellow); }
-        .badge.approved { background: rgba(70,211,105,0.15); color: var(--green); }
-        .badge.declined { background: rgba(229,9,20,0.15); color: var(--red); }
-        .badge.referral { background: rgba(179,127,235,0.15); color: var(--purple); }
-        .amount-green { color: var(--green); font-weight: 600; }
-        .amount-red { color: var(--red); font-weight: 600; }
-        .amount-yellow { color: var(--yellow); font-weight: 600; }
-        .amount-purple { color: var(--purple); font-weight: 600; }
-        .admin-section { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 28px; margin-bottom: 28px; }
-        .admin-section h3 { font-size: 17px; color: var(--text); margin-bottom: 18px; font-weight: 700; }
-        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 16px; }
-        .admin-card { background: var(--black); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
-        .admin-card:hover { border-color: var(--text3); }
-        .admin-card .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .admin-card .user-header h4 { font-size: 16px; color: var(--text); }
-        .admin-card .user-detail { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
-        .admin-card .user-detail strong { color: var(--text); }
-        .admin-card .admin-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
-        .admin-card .admin-actions input,.admin-card .admin-actions select { padding: 6px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 12px; width: 100px; }
-        .admin-card .admin-actions select { width: auto; }
-        .admin-card .admin-actions button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .btn-green { background: var(--green); color: var(--black); }
-        .btn-blue { background: var(--blue); color: var(--text); }
-        .btn-red { background: var(--red); color: var(--text); }
-        .btn-yellow { background: var(--yellow); color: var(--black); }
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: var(--black); border: 1px solid var(--border); border-radius: 8px; padding: 32px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
-        .modal h3 { font-size: 20px; color: var(--text); margin-bottom: 18px; font-weight: 700; }
-        .modal input,.modal select { width: 100%; padding: 12px 14px; margin-bottom: 14px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 14px; outline: none; }
-        .modal input:focus { border-color: var(--text); }
-        .modal select option { background: var(--card); }
-        .modal .modal-actions { display: flex; gap: 10px; margin-top: 8px; }
-        .modal .modal-actions button { flex: 1; padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
-        .modal .modal-actions .cancel { background: var(--card); color: var(--text2); }
-        .modal .modal-actions .cancel:hover { background: var(--card-hover); }
-        .hidden { display: none !important; }
-        .tab-buttons { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
-        .tab-buttons button { padding: 8px 20px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; color: var(--text2); cursor: pointer; font-size: 13px; font-weight: 600; }
-        .tab-buttons button.active { background: rgba(229,9,20,0.2); border-color: var(--red); color: var(--red); }
-        .tab-buttons button:hover { border-color: var(--red); }
-        .referral-box { background: linear-gradient(135deg, var(--card), var(--black)); border: 1px solid rgba(0,113,235,0.3); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-        .referral-box .r-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; }
-        .referral-box .r-code { font-size: 24px; font-weight: 700; color: var(--blue); margin: 6px 0; }
-        .referral-box .r-link { font-size: 13px; color: var(--blue); word-break: break-all; cursor: pointer; }
-        .referral-box .r-link:hover { text-decoration: underline; }
-        .reset-section { display: none; margin-top: 14px; padding: 14px; background: var(--card); border-radius: 6px; border: 1px solid var(--border); }
-        .reset-section.show { display: block; }
-        .withdraw-type-tabs { display: flex; gap: 0; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-        .withdraw-type-tabs div { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--card); color: var(--text3); border-right: 1px solid var(--border); }
-        .withdraw-type-tabs div:last-child { border-right: none; }
-        .withdraw-type-tabs div.active { background: rgba(229,9,20,0.2); color: var(--red); }
-        .withdraw-type-tabs div:hover:not(.active) { background: var(--card-hover); }
-        .admin-stat-red { color: var(--red); }
-        @media (max-width:640px){
-            .auth-box { padding: 30px 24px; }
-            .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .admin-grid { grid-template-columns: 1fr; }
-            .dashboard-content { padding: 16px; }
-        }
-        .monnify-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: rgba(0,113,235,0.15); color: var(--blue); margin-left: 4px; }
-        .np-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: rgba(179,127,235,0.15); color: var(--purple); margin-left: 4px; }
-        .payout-status { font-size: 11px; color: var(--text3); }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NatureZone - Investment Platform</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f0f23; color: #e0e0e0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+    .container { width: 100%; max-width: 480px; padding: 20px; }
+    .card { background: #1a1a3e; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    h1 { text-align: center; color: #2d7d46; font-size: 28px; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 25px; }
+    input { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #333; border-radius: 8px; background: #0f0f23; color: #fff; font-size: 15px; }
+    input:focus { outline: none; border-color: #2d7d46; }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .btn-primary { background: #2d7d46; color: #fff; }
+    .btn-primary:hover { background: #359f55; }
+    .btn-danger { background: #c0392b; color: #fff; }
+    .btn-danger:hover { background: #e74c3c; }
+    .btn-secondary { background: #2980b9; color: #fff; }
+    .btn-small { padding: 8px 16px; font-size: 13px; width: auto; }
+    .link { color: #2d7d46; cursor: pointer; text-decoration: underline; font-size: 14px; }
+    .link:hover { color: #359f55; }
+    .error { color: #ff6b6b; font-size: 14px; margin: 8px 0; text-align: center; }
+    .success { color: #2ecc71; font-size: 14px; margin: 8px 0; text-align: center; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; }
+    .stat-box { background: #0f0f23; border-radius: 10px; padding: 15px; text-align: center; }
+    .stat-box .label { font-size: 12px; color: #888; }
+    .stat-box .value { font-size: 20px; font-weight: 700; color: #2d7d46; margin-top: 4px; }
+    hr { border: none; border-top: 1px solid #2a2a4a; margin: 20px 0; }
+    .balance-big { font-size: 32px; font-weight: 700; color: #2d7d46; text-align: center; margin: 10px 0; }
+    .admin-link { text-align: center; margin-top: 20px; font-size: 12px; color: #555; }
+    .admin-link a { color: #555; text-decoration: none; }
+    .admin-link a:hover { color: #888; }
+    .tx-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+    .tx-table th { text-align: left; color: #888; padding: 8px 4px; border-bottom: 1px solid #333; }
+    .tx-table td { padding: 8px 4px; border-bottom: 1px solid #222; }
+    .badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+    .badge-completed { background: #27ae60; color: #fff; }
+    .badge-pending { background: #f39c12; color: #fff; }
+    .badge-failed { background: #e74c3c; color: #fff; }
+    .hidden { display: none; }
+    .tab-bar { display: flex; gap: 4px; margin: 15px 0; }
+    .tab { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; background: #0f0f23; color: #888; font-size: 13px; transition: 0.2s; }
+    .tab.active { background: #2d7d46; color: #fff; }
+    .tab:hover { background: #2a2a4a; }
+    #loading { text-align: center; padding: 40px 0; color: #888; }
+    .spinner { border: 3px solid #2a2a4a; border-top: 3px solid #2d7d46; border-radius: 50%; width: 30px; height: 30px; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .deposit-amounts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
+    .deposit-amounts button { padding: 12px; border: 1px solid #333; border-radius: 8px; background: #0f0f23; color: #fff; cursor: pointer; font-size: 14px; }
+    .deposit-amounts button:hover { border-color: #2d7d46; }
+    .withdraw-section { margin: 10px 0; }
+    .withdraw-section label { display: block; margin: 10px 0 5px; color: #aaa; font-size: 13px; }
+  </style>
 </head>
 <body>
-
-<div id="authContainer" class="auth-container">
-    <div class="auth-box">
-        <div class="logo"><h1>NETFLIX<span>ZONE</span></h1><p>Investment Platform</p></div>
-        <div class="auth-tabs">
-            <div class="active" onclick="showAuthTab('login')">Sign In</div>
-            <div onclick="showAuthTab('register')">Register</div>
-        </div>
-        <div id="loginForm">
-            <h2>Welcome back</h2>
-            <div id="loginError" class="error"></div>
-            <input type="text" id="loginUsername" placeholder="Username" autocomplete="off">
-            <input type="password" id="loginPassword" placeholder="Password">
-            <button class="btn-primary" onclick="userLogin()">Sign In</button>
-            <div class="link"><a href="#" onclick="event.preventDefault();showAuthTab('register');">New to NetflixZone? Register now.</a></div>
-            <div class="link" style="margin-top:6px;"><a href="#" onclick="event.preventDefault();toggleResetPassword();">Forgot password?</a></div>
-            <div id="resetSection" class="reset-section">
-                <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Contact admin to reset your password.</p>
-                <input type="text" id="resetUsername" placeholder="Enter your username">
-                <button class="btn-primary" onclick="resetPasswordRequest()">Request Reset</button>
-                <div id="resetMsg" style="font-size:13px;margin-top:8px;text-align:center;"></div>
-            </div>
-        </div>
-        <div id="registerForm" class="hidden">
-            <h2>Create Account</h2>
-            <div id="registerError" class="error"></div>
-            <div id="registerSuccess" class="success"></div>
-            <input type="text" id="regUsername" placeholder="Choose a username" autocomplete="off">
-            <input type="text" id="regFullname" placeholder="Full name">
-            <input type="email" id="regEmail" placeholder="Email address">
-            <input type="text" id="regPhone" placeholder="Phone (optional)">
-            <input type="password" id="regPassword" placeholder="Password">
-            <input type="text" id="regReferral" placeholder="Referral code (optional)" autocomplete="off">
-            <button class="btn-primary" onclick="userRegister()">Create Account</button>
-            <div class="link"><a href="#" onclick="event.preventDefault();showAuthTab('login');">Already have an account? Sign in.</a></div>
-        </div>
-        <div class="admin-hidden-link"><a onclick="openAdminLogin()">●</a></div>
-    </div>
+<div class="container">
+  <div id="app"></div>
 </div>
 
-<div id="adminLoginOverlay" class="admin-login-overlay">
-    <div class="admin-login-box">
-        <button class="close-admin" onclick="closeAdminLogin()">✕</button>
-        <h3>🔐 Admin Access</h3>
-        <p class="sub">Authorized personnel only</p>
-        <div id="adminLoginError" class="admin-error"></div>
-        <input type="text" id="adminLoginUser" placeholder="Admin username" autocomplete="off">
-        <input type="password" id="adminLoginPass" placeholder="Admin password">
-        <button class="btn-admin" onclick="adminLogin()">Access Dashboard</button>
-    </div>
-</div>
-
-<div id="userDashboard" class="dashboard">
-    <div class="topbar">
-        <div class="brand">NETFLIX<span>ZONE</span></div>
-        <div class="user-menu">
-            <span class="username" id="displayUsername">user</span>
-            <span id="userStatusBadge" class="status-badge active">Active</span>
-            <button onclick="userLogout()" class="logout-btn">Sign Out</button>
-        </div>
-    </div>
-    <div class="dashboard-content">
-        <div class="stats-grid">
-            <div class="stat-card"><div class="label">Balance (NGN)</div><div class="value green" id="userBalance">₦0.00</div></div>
-            <div class="stat-card"><div class="label">Invested (NGN)</div><div class="value" id="userInvested">₦0.00</div></div>
-            <div class="stat-card"><div class="label">Total Profit (NGN)</div><div class="value green" id="userProfit">₦0.00</div></div>
-            <div class="stat-card"><div class="label">Referral Bonus</div><div class="value" style="color:var(--purple);" id="userReferralBonus">₦0.00</div></div>
-            <div class="stat-card"><div class="label">Plan</div><div class="value" id="userPlan" style="font-size:20px;">-</div></div>
-        </div>
-        <div class="referral-box">
-            <div class="r-label">Your Referral Code</div>
-            <div class="r-code" id="refCode">-</div>
-            <div class="r-link" id="refLink" onclick="copyRefLink()">Click to copy</div>
-        </div>
-        <div class="quick-actions">
-            <div class="quick-action" onclick="showDepositModal()"><div class="icon">💰</div><h3>Deposit</h3><p>Fund via Monnify</p></div>
-            <div class="quick-action" id="withdrawBtn" onclick="showWithdrawModal()"><div class="icon">💸</div><h3>Withdraw</h3><p>To wallet / bank</p></div>
-            <div class="quick-action" onclick="showProfileModal()"><div class="icon">👤</div><h3>Profile</h3><p>Account details</p></div>
-            <div class="quick-action" onclick="refreshUserData()"><div class="icon">🔄</div><h3>Refresh</h3><p>Update data</p></div>
-        </div>
-        <div class="section-title" id="interestStatus" style="font-size:13px;color:var(--blue);margin-bottom:8px;"></div>
-        <div class="section-title">Transaction History</div>
-        <div class="tab-buttons">
-            <button class="active" onclick="showTxTab('all')">All</button>
-            <button onclick="showTxTab('deposits')">Deposits</button>
-            <button onclick="showTxTab('withdrawals')">Withdrawals</button>
-            <button onclick="showTxTab('profits')">Profits</button>
-            <button onclick="showTxTab('referrals')">Referrals</button>
-        </div>
-        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th><th>Details</th></tr></thead><tbody id="userTransactions"></tbody></table></div>
-
-        <div id="adminSection" class="hidden">
-            <div class="section-title" style="color:var(--red);">⚙ Admin Dashboard</div>
-
-            <div class="section-title" style="font-size:15px;color:var(--text2);margin-top:0;">Platform Overview</div>
-            <div class="stats-grid" style="grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));">
-                <div class="stat-card"><div class="label">Total Users</div><div class="value admin-stat-red" id="adminTotalUsers">0</div></div>
-                <div class="stat-card"><div class="label">Active Users</div><div class="value green" id="adminActiveUsers">0</div></div>
-            </div>
-
-            <div class="admin-section">
-                <h3>⚙️ Platform Settings</h3>
-                <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
-                    <div><label style="font-size:12px;color:var(--text3);">Daily Interest (%)</label><input type="number" id="adminInterestRate" step="0.1" min="0" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);width:100px;"></div>
-                    <button onclick="adminUpdateInterest()" class="btn-blue" style="padding:10px 20px;margin-top:16px;">Set</button>
-                    <div style="font-size:12px;color:var(--text2);margin-top:16px;">Current: <span id="currentInterestDisplay">2%</span></div>
-                </div>
-                <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
-                    <div><label style="font-size:12px;color:var(--text3);">Min Deposit (NGN)</label><input type="number" id="adminMinDeposit" step="100" min="100" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);width:130px;"></div>
-                    <div><label style="font-size:12px;color:var(--text3);">Min Withdrawal (NGN)</label><input type="number" id="adminMinWithdraw" step="100" min="100" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);width:130px;"></div>
-                    <button onclick="adminUpdateMinAmounts()" class="btn-yellow" style="padding:10px 20px;margin-top:16px;">Set</button>
-                    <div style="font-size:12px;color:var(--text2);margin-top:16px;">Min Deposit ₦<span id="currentMinDeposit">1,000</span> | Min Withdraw ₦<span id="currentMinWithdraw">500</span></div>
-                </div>
-                <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
-                    <label style="font-size:12px;color:var(--text3);">Withdrawal Day</label>
-                    <select id="adminWithdrawDay" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);">
-                        <option value="5">Friday</option><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
-                        <option value="3">Wednesday</option><option value="4">Thursday</option><option value="6">Saturday</option><option value="-1">Any day</option>
-                    </select>
-                    <button onclick="adminUpdateWithdrawDay()" class="btn-yellow" style="padding:10px 20px;">Set</button>
-                    <div style="font-size:12px;color:var(--text2);">Current: <span id="currentWithdrawDayDisplay">Friday</span></div>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <h3>👑 Monnify Settings (Bank Payouts)</h3>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-                    <input type="text" id="adminMonnifyApiKey" placeholder="API Key" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:2;">
-                    <input type="text" id="adminMonnifyContractCode" placeholder="Contract Code" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:2;">
-                    <input type="password" id="adminMonnifySecretKey" placeholder="Secret Key" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:2;">
-                    <button onclick="adminSaveMonnifyKeys()" class="btn-yellow" style="padding:10px 20px;">💳 Save</button>
-                </div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-                    <input type="text" id="adminMonnifySourceAccount" placeholder="Source Account Number" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:2;">
-                    <div style="font-size:12px;color:var(--text3);padding:10px 0;">(Your Monnify wallet account number)</div>
-                </div>
-                <div style="font-size:12px;color:var(--text2);">Keys from <a href="https://app.monnify.com" target="_blank" style="color:var(--blue);">app.monnify.com</a> → Developers | Disbursements API v2</div>
-                <div id="monnifyMsg" style="font-size:12px;color:var(--green);margin-top:6px;"></div>
-            </div>
-
-            <div class="admin-section">
-                <h3>🔮 NOWPayments Settings (Crypto Payouts)</h3>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-                    <input type="text" id="adminNPApiKey" placeholder="NOWPayments API Key" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:2;">
-                    <input type="password" id="adminNPSecretKey" placeholder="IPN Secret Key" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:2;">
-                    <input type="email" id="adminNPEmail" placeholder="NP Account Email (JWT)" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:2;">
-                    <input type="password" id="adminNPPassword" placeholder="NP Account Password (JWT)" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:2;">
-                    <button onclick="adminSaveNPKeys()" class="btn-yellow" style="padding:10px 20px;">💾 Save</button>
-                </div>
-                <div style="font-size:12px;color:var(--text2);">From <a href="https://nowpayments.io" target="_blank" style="color:var(--blue);">nowpayments.io</a> → API Settings | Mass Payouts</div>
-                <div id="npMsg" style="font-size:12px;color:var(--green);margin-top:6px;"></div>
-            </div>
-
-            <div class="admin-section">
-                <h3>⏳ Pending Withdrawals (Approve or Decline)</h3>
-                <div id="pendingWithdrawals"></div>
-            </div>
-
-            <div class="admin-section">
-                <h3>All Users</h3>
-                <div id="adminUserCards" class="admin-grid"></div>
-            </div>
-            <div class="admin-section">
-                <h3>Create User</h3>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <input type="text" id="adminNewUser" placeholder="Username" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:1;">
-                    <input type="text" id="adminNewPass" placeholder="Password" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:1;">
-                    <input type="text" id="adminNewName" placeholder="Full name" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:1;">
-                    <button onclick="adminCreateUser()" class="btn-green" style="padding:10px 20px;">➕ Create</button>
-                </div>
-                <div id="adminCreateMsg" style="margin-top:8px;font-size:13px;color:var(--green);"></div>
-            </div>
-            <div class="admin-section">
-                <h3>🔑 Change Admin Password</h3>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <input type="password" id="adminCurrentPass" placeholder="Current" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:1;">
-                    <input type="password" id="adminNewPassInput" placeholder="New" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:1;">
-                    <button onclick="changeAdminPassword()" class="btn-blue" style="padding:10px 20px;">Update</button>
-                </div>
-                <div id="changePassMsg" style="font-size:13px;"></div>
-            </div>
-            <div class="admin-section">
-                <h3>🔑 Reset User Password</h3>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <input type="text" id="adminResetUser" placeholder="Username" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:1;">
-                    <input type="text" id="adminResetUserPass" placeholder="New password" style="padding:10px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);flex:1;">
-                    <button onclick="adminResetUserPassword()" class="btn-blue" style="padding:10px 20px;">Reset</button>
-                </div>
-                <div id="resetUserPassMsg" style="font-size:13px;"></div>
-            </div>
-            <div class="admin-section">
-                <h3>System Actions</h3>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <button onclick="adminPayAllProfits()" class="btn-blue" style="padding:10px 20px;">💰 Apply Daily Interest</button>
-                    <button onclick="adminResetAll()" class="btn-red" style="padding:10px 20px;">⚠️ Reset All Data</button>
-                    <button onclick="refreshAdminData()" class="btn-yellow" style="padding:10px 20px;">🔄 Refresh</button>
-                </div>
-                <div id="adminActionMsg" style="margin-top:8px;font-size:13px;color:var(--blue);"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="depositModal" class="modal-overlay">
-    <div class="modal">
-        <h3>💰 Make a Deposit (NGN)</h3>
-        <div id="depositError" class="error"></div>
-        <div id="depositInfo" style="font-size:13px;color:var(--text2);margin-bottom:12px;"></div>
-        <input type="number" id="depositAmount" placeholder="Amount (NGN)" min="1000" step="100">
-        <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">Email (required):</div>
-        <input type="email" id="depositEmail" placeholder="your@email.com">
-        <div class="modal-actions">
-            <button class="cancel" onclick="closeModal('depositModal')">Cancel</button>
-            <button class="btn-green" onclick="processDeposit()" style="background:var(--red);color:var(--text);">💳 Pay with Monnify</button>
-        </div>
-    </div>
-</div>
-
-<div id="withdrawModal" class="modal-overlay">
-    <div class="modal">
-        <h3>💸 Withdraw Funds</h3>
-        <div id="withdrawError" class="error"></div>
-        <div id="withdrawInfo" style="color:var(--yellow);font-size:13px;margin-bottom:12px;"></div>
-
-        <div class="withdraw-type-tabs">
-            <div class="active" onclick="switchWithdrawType('crypto')">💎 Crypto</div>
-            <div onclick="switchWithdrawType('bank')">🏦 Bank</div>
-        </div>
-
-        <div id="cryptoWithdrawFields">
-            <input type="number" id="withdrawAmount" placeholder="Amount (NGN)" min="500" step="100">
-            <select id="withdrawCurrency" style="margin-bottom:12px;">
-                <option value="USDT (TRC20)">USDT (TRC20)</option>
-                <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
-                <option value="Ethereum (ETH)">Ethereum (ETH)</option>
-                <option value="Tron (TRX)">Tron (TRX)</option>
-                <option value="Litecoin (LTC)">Litecoin (LTC)</option>
-                <option value="Dogecoin (DOGE)">Dogecoin (DOGE)</option>
-                <option value="Solana (SOL)">Solana (SOL)</option>
-            </select>
-            <input type="text" id="withdrawWallet" placeholder="Wallet address">
-        </div>
-
-        <div id="bankWithdrawFields" class="hidden">
-            <input type="number" id="withdrawBankAmount" placeholder="Amount (NGN)" min="500" step="100">
-            <select id="withdrawBankName" style="margin-bottom:12px;">
-                <option value="">-- Select Bank --</option>
-                <option value="Access Bank|044">Access Bank</option>
-                <option value="Ecobank|050">Ecobank</option>
-                <option value="Fidelity Bank|070">Fidelity Bank</option>
-                <option value="First Bank|011">First Bank of Nigeria</option>
-                <option value="First City Monument Bank|214">First City Monument Bank (FCMB)</option>
-                <option value="GTBank|058">GTBank</option>
-                <option value="Jaiz Bank|301">Jaiz Bank</option>
-                <option value="Keystone Bank|082">Keystone Bank</option>
-                <option value="Polaris Bank|076">Polaris Bank</option>
-                <option value="Stanbic IBTC|221">Stanbic IBTC</option>
-                <option value="Sterling Bank|232">Sterling Bank</option>
-                <option value="Union Bank|032">Union Bank</option>
-                <option value="United Bank for Africa|033">United Bank for Africa (UBA)</option>
-                <option value="Unity Bank|215">Unity Bank</option>
-                <option value="Wema Bank|035">Wema Bank</option>
-                <option value="Zenith Bank|057">Zenith Bank</option>
-            </select>
-            <input type="text" id="withdrawBankAccount" placeholder="Account number">
-            <input type="text" id="withdrawBankHolder" placeholder="Account holder name">
-        </div>
-
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">⚠️ Requires admin approval.</div>
-        <div class="modal-actions">
-            <button class="cancel" onclick="closeModal('withdrawModal')">Cancel</button>
-            <button class="btn-yellow" onclick="processWithdraw()" style="background:var(--yellow);color:var(--black);">Submit</button>
-        </div>
-    </div>
-</div>
-
-<div id="profileModal" class="modal-overlay">
-    <div class="modal">
-        <h3>👤 Account Profile</h3>
-        <div id="profileInfo"></div>
-        <div class="modal-actions"><button class="cancel" onclick="closeModal('profileModal')" style="width:100%;">Close</button></div>
-    </div>
-</div>
-
-<div id="depositResultModal" class="modal-overlay">
-    <div class="modal" style="text-align:center;">
-        <h3 id="depositResultTitle">✅ Payment Confirmed</h3>
-        <div id="depositResultContent" style="font-size:14px;color:var(--text2);margin:16px 0;"></div>
-        <div class="modal-actions">
-            <button class="btn-green" onclick="closeModal('depositResultModal');refreshUserData();" style="background:var(--red);color:var(--text);width:100%;">OK</button>
-        </div>
-    </div>
-</div>
-
-<div id="payoutResultModal" class="modal-overlay">
-    <div class="modal" style="text-align:center;">
-        <h3 id="payoutResultTitle">✅ Payout Initiated</h3>
-        <div id="payoutResultContent" style="font-size:14px;color:var(--text2);margin:16px 0;"></div>
-        <div class="modal-actions">
-            <button class="btn-green" onclick="closeModal('payoutResultModal');refreshAdminData();" style="background:var(--red);color:var(--text);width:100%;">OK</button>
-        </div>
-    </div>
-</div>
-
-<script src="https://sdk.monnify.com/plugin/monnify.js"></script>
 <script>
-// ============================================================
-// CONFIG — EDIT YOUR JSONBIN CREDENTIALS HERE
-// ============================================================
-var JSONBIN_MASTER_KEY = "$2a$10$7LIOruQCVZ2kz.zECoZdOeGnJlwM78ZjJ7K3HxpfglNnITLECcd56";
-var JSONBIN_ACCESS_KEY = "";
-var JSONBIN_BIN_ID = "6a39a799da38895dfeee0840";
-var JSONBIN_URL = "https://api.jsonbin.io/v3/b/" + JSONBIN_BIN_ID;
+// ====================================================================
+// NATUREZONE - SINGLE FILE FRONTEND
+// Zero admin code. Zero API keys. Zero secrets.
+// All API calls go to the backend server.
+// ====================================================================
 
-// Currency: Naira
-var CURRENCY_SYMBOL = "\u20A6";
-var CURRENCY_CODE = "NGN";
-var DEFAULT_MIN_DEPOSIT = 1000;
-var DEFAULT_MIN_WITHDRAW = 500;
+// ── CHANGE THIS TO YOUR BACKEND URL ────────────────────────────────
+const API_URL = 'https://naturezone-admin.onrender.com/api';
+// ───────────────────────────────────────────────────────────────────
 
-function getHeaders() {
-    var h = { 'X-Master-Key': JSONBIN_MASTER_KEY };
-    if (JSONBIN_ACCESS_KEY) h['X-Access-Key'] = JSONBIN_ACCESS_KEY;
-    return h;
+const state = {
+  token: localStorage.getItem('nz_token') || '',
+  user: null,
+  transactions: [],
+  loading: true,
+  error: '',
+  success: '',
+  authMode: 'login', // login | register
+  activeTab: 'dashboard' // dashboard | deposit | withdraw | history
+};
+
+// ── API HELPER ────────────────────────────────────────────────────
+
+async function apiCall(endpoint, method = 'GET', body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (state.token) opts.headers['Authorization'] = `Bearer ${state.token}`;
+  if (body) opts.body = JSON.stringify(body);
+  
+  try {
+    const res = await fetch(`${API_URL}${endpoint}`, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  } catch (err) {
+    throw err;
+  }
 }
 
-var appData = null, currentUser = null, currentUserData = null, isAdminLoggedIn = false, currentTxTab = 'all';
+// ── AUTH ──────────────────────────────────────────────────────────
 
-function loadData() {
-    return fetch(JSONBIN_URL, { headers: getHeaders() })
-        .then(function(r) { if (!r.ok) return null; return r.json(); })
-        .then(function(j) { if (j) appData = j.record; return appData; })
-        .catch(function() { return null; });
+async function handleAuth(e) {
+  e.preventDefault();
+  state.error = '';
+  state.success = '';
+  const form = e.target;
+  const email = form.email.value;
+  const password = form.password.value;
+  
+  try {
+    const endpoint = state.authMode === 'register' ? '/auth/register' : '/auth/login';
+    const data = await apiCall(endpoint, 'POST', { email, password });
+    state.token = data.token;
+    localStorage.setItem('nz_token', data.token);
+    state.user = data.user;
+    render();
+    loadDashboard();
+  } catch (err) {
+    state.error = err.message;
+    render();
+  }
 }
-function saveData() {
-    return fetch(JSONBIN_URL, { method:'PUT', headers:Object.assign({'Content-Type':'application/json'},getHeaders()), body:JSON.stringify(appData) })
-        .then(function(r) { return r.ok; }).catch(function() { return false; });
-}
-function esc(s) { if(!s)return''; var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-function minDep() { return (appData.settings&&appData.settings.minDeposit)||DEFAULT_MIN_DEPOSIT; }
-function minWd() { return (appData.settings&&appData.settings.minWithdraw)||DEFAULT_MIN_WITHDRAW; }
-function wdDay() { if(!appData.settings||appData.settings.withdrawDay===undefined)return 5; return parseInt(appData.settings.withdrawDay); }
-function wdName(d) { var a=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']; return d===-1?'Any day':a[d]; }
-function fmtNaira(amount) { return CURRENCY_SYMBOL + Number(amount).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
-// ============================================================
-// AUTH UI
-// ============================================================
-function showAuthTab(t) {
-    document.querySelectorAll('.auth-tabs div').forEach(function(e){e.classList.remove('active');});
-    if(t==='login'){
-        document.getElementById('loginForm').classList.remove('hidden');
-        document.getElementById('registerForm').classList.add('hidden');
-        document.querySelector('.auth-tabs div:first-child').classList.add('active');
-    } else {
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('registerForm').classList.remove('hidden');
-        document.querySelector('.auth-tabs div:last-child').classList.add('active');
+function handleLogout() {
+  state.token = '';
+  state.user = null;
+  localStorage.removeItem('nz_token');
+  render();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+
+async function loadDashboard() {
+  state.loading = true;
+  render();
+  try {
+    const [profile, txs] = await Promise.all([
+      apiCall('/user/profile'),
+      apiCall('/user/transactions')
+    ]);
+    state.user = profile;
+    state.transactions = txs;
+    state.loading = false;
+    render();
+  } catch (err) {
+    if (err.message.includes('401') || err.message.includes('Not authenticated')) {
+      state.token = '';
+      localStorage.removeItem('nz_token');
+      state.user = null;
     }
-    ['loginError','registerError','registerSuccess'].forEach(function(i){document.getElementById(i).textContent='';});
-}
-function toggleResetPassword() { var s=document.getElementById('resetSection'); s.classList.toggle('show'); document.getElementById('resetUsername').value=''; document.getElementById('resetMsg').textContent=''; }
-function resetPasswordRequest() {
-    var u=document.getElementById('resetUsername').value.trim(), m=document.getElementById('resetMsg');
-    if(!u){m.textContent='Enter your username.';m.style.color='#E50914';return;}
-    if(!appData||!appData.users[u]){m.textContent='Username not found.';m.style.color='#E50914';return;}
-    m.textContent='Contact admin to reset your password.';m.style.color='#e6b91e';
+    state.loading = false;
+    state.error = err.message;
+    render();
+  }
 }
 
-// ============================================================
-// USER LOGIN / REGISTER
-// ============================================================
-function userLogin() {
-    var u=document.getElementById('loginUsername').value.trim(), p=document.getElementById('loginPassword').value.trim(), e=document.getElementById('loginError');
-    if(!u||!p){e.textContent='Enter username and password.';return;}
-    loadData().then(function() {
-        if(!appData){e.textContent='Failed to connect.';return;}
-        var user=appData.users[u]; if(!user||user.password!==p){e.textContent='Invalid credentials.';return;}
-        if(user.status==='closed'){e.textContent='Account closed.';return;}
-        isAdminLoggedIn=false; currentUser=u; currentUserData=user;
-        applyDailyInterest().then(function(){enterDashboard('user');});
-    });
-}
-function registerReferralBonus(referee, amt) {
-    var r=appData.users[referee]; if(!r||!r.referredBy)return Promise.resolve();
-    var ru=r.referredBy, rr=appData.users[ru]; if(!rr)return Promise.resolve();
-    var b=amt*0.20; rr.balance+=b; rr.referralBonus=(rr.referralBonus||0)+b;
-    if(!rr.transactions)rr.transactions=[]; if(!rr.referrals)rr.referrals=[];
-    var n=new Date(), d=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-    rr.transactions.push({date:d, type:'referral', amount:b, description:'Referral bonus 20% from '+referee});
-    rr.referrals.push({date:d, referee:referee, bonus:b}); appData.users[ru]=rr;
-    return saveData();
-}
-function applyDailyInterest() {
-    return new Promise(function(resolve) {
-        if(!appData||!currentUser||!appData.users[currentUser]){resolve();return;}
-        var u=appData.users[currentUser], r=(appData.settings&&appData.settings.interestRate)||2, t=new Date().toDateString();
-        if(u.lastInterestDate===t){document.getElementById('interestStatus').textContent='Interest already applied today.'; resolve();return;}
-        if(u.balance>0&&u.status==='active'){
-            var i=u.balance*(r/100); u.balance+=i; u.profit+=i;
-            if(!u.transactions)u.transactions=[];
-            var n=new Date(), d=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-            u.transactions.push({date:d, type:'profit', amount:i, description:'Daily interest '+r+'%'});
-            u.lastInterestDate=t; appData.users[currentUser]=u;
-            saveData().then(function(){document.getElementById('interestStatus').textContent=r+'% interest ('+fmtNaira(i)+') applied!';resolve();});
-        } else {
-            u.lastInterestDate=t; appData.users[currentUser]=u;
-            saveData().then(function(){document.getElementById('interestStatus').textContent=u.status!=='active'?'Only active accounts earn interest.':'No balance to earn interest.';resolve();});
-        }
-    });
-}
-function resolveRef(ref) { if(appData.users[ref])return ref; for(var un in appData.users){if(appData.users[un].referralCode===ref)return un;} return null; }
-function userRegister() {
-    var u=document.getElementById('regUsername').value.trim(), fn=document.getElementById('regFullname').value.trim(),
-        em=document.getElementById('regEmail').value.trim(), ph=document.getElementById('regPhone').value.trim(),
-        pw=document.getElementById('regPassword').value.trim(), ref=document.getElementById('regReferral').value.trim(),
-        err=document.getElementById('registerError'), suc=document.getElementById('registerSuccess');
-    if(!u||!fn||!em||!pw){err.textContent='Fill required fields.';suc.textContent='';return;}
-    loadData().then(function() {
-        if(!appData){err.textContent='Failed to connect.';return;} if(appData.users[u]){err.textContent='Username taken.';suc.textContent='';return;}
-        var rbu=''; if(ref){rbu=resolveRef(ref); if(!rbu){err.textContent='Invalid referral code.';suc.textContent='';return;}}
-        var n=new Date(), d=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
-        appData.users[u]={fullName:fn,email:em,phone:ph||'',password:pw,balance:0,invested:0,profit:0,referralBonus:0,referralCode:u,referredBy:rbu,plan:'Basic',status:'active',createdAt:d,lastInterestDate:'',transactions:[],withdrawals:[],referrals:[],processedReferences:[]};
-        saveData().then(function(){err.textContent='';suc.textContent='Account created! Sign in now.';['regUsername','regFullname','regEmail','regPhone','regPassword','regReferral'].forEach(function(i){document.getElementById(i).value='';});});
-    });
-}
-function userLogout() { currentUser=null;currentUserData=null;isAdminLoggedIn=false;document.getElementById('authContainer').classList.remove('hidden');document.getElementById('userDashboard').classList.remove('active');document.getElementById('loginUsername').value='';document.getElementById('loginPassword').value=''; }
+// ── DEPOSIT ───────────────────────────────────────────────────────
 
-// ============================================================
-// ADMIN LOGIN
-// ============================================================
-function openAdminLogin(){document.getElementById('adminLoginError').textContent='';document.getElementById('adminLoginUser').value='';document.getElementById('adminLoginPass').value='';document.getElementById('adminLoginOverlay').classList.add('active');}
-function closeAdminLogin(){document.getElementById('adminLoginOverlay').classList.remove('active');}
-function adminLogin(){
-    var u=document.getElementById('adminLoginUser').value.trim(),p=document.getElementById('adminLoginPass').value.trim(),e=document.getElementById('adminLoginError');
-    if(!u||!p){e.textContent='Enter credentials.';return;}
-    loadData().then(function(){if(!appData){e.textContent='Failed.';return;}if(u===appData.admin.username&&p===appData.admin.password){isAdminLoggedIn=true;currentUser='admin';currentUserData=null;closeAdminLogin();enterDashboard('admin');}else{e.textContent='Invalid admin credentials.';}});
-}
-
-// ============================================================
-// DASHBOARD
-// ============================================================
-function enterDashboard(t){
-    document.getElementById('authContainer').classList.add('hidden');document.getElementById('userDashboard').classList.add('active');
-    if(t==='admin'){document.getElementById('displayUsername').textContent='Admin';document.getElementById('adminSection').classList.remove('hidden');refreshAdminData();}
-    else{document.getElementById('displayUsername').textContent=currentUserData.fullName||currentUser;document.getElementById('adminSection').classList.add('hidden');refreshUserData();}
-}
-function showTxTab(tab){currentTxTab=tab;document.querySelectorAll('.tab-buttons button').forEach(function(b){b.classList.remove('active');});document.querySelectorAll('.tab-buttons button').forEach(function(b){if(b.textContent.toLowerCase()===tab)b.classList.add('active');});refreshUserData();}
-
-// ============================================================
-// REFRESH USER DATA
-// ============================================================
-function refreshUserData(){
-    loadData().then(function(){
-        if(!appData||!appData.users[currentUser]){alert('Session expired.');userLogout();return;}
-        currentUserData=appData.users[currentUser];
-        document.getElementById('userBalance').textContent=fmtNaira(currentUserData.balance);
-        document.getElementById('userInvested').textContent=fmtNaira(currentUserData.invested);
-        document.getElementById('userProfit').textContent=fmtNaira(currentUserData.profit);
-        document.getElementById('userReferralBonus').textContent=fmtNaira(currentUserData.referralBonus||0);
-        document.getElementById('userPlan').textContent=currentUserData.plan;
-        document.getElementById('refCode').textContent=currentUser; document.getElementById('refLink').textContent=currentUser;
-        var b=document.getElementById('userStatusBadge'); b.textContent=currentUserData.status.charAt(0).toUpperCase()+currentUserData.status.slice(1); b.className='status-badge '+currentUserData.status;
-        var w=document.getElementById('withdrawBtn'); if(currentUserData.status==='frozen'){w.classList.add('disabled');w.onclick=function(){alert('Withdrawals disabled.');};}else{w.classList.remove('disabled');w.onclick=function(){showWithdrawModal();};}
-        var a=[];
-        (currentUserData.transactions||[]).forEach(function(t){a.push(Object.assign({},t));});
-        (currentUserData.withdrawals||[]).forEach(function(w){
-            var wType = w.type === 'bank' ? 'bank_withdraw' : 'withdraw';
-            var det = '';
-            if (w.type === 'bank') {
-                det = w.bankName + ': ' + w.accountNumber + ' (' + w.accountHolder + ')';
-                if (w.payoutRef) det += ' | Ref: ' + w.payoutRef;
-            } else {
-                det = '\u2192 '+w.currency+': '+ (w.wallet||'').substring(0,16)+'...'+(w.wallet||'').substring((w.wallet||'').length-4);
-                if (w.payoutRef) det += ' | Ref: ' + w.payoutRef;
-            }
-            a.push({date:w.date, type: wType, amount:-w.amount, status:w.status, description:det, payoutRef: w.payoutRef, isBank: w.type === 'bank'});
-        });
-        (currentUserData.referrals||[]).forEach(function(r){a.push({date:r.date, type:'referral', amount:r.bonus, status:'approved', description:'Bonus from '+r.referee});});
-        var f=a; if(currentTxTab==='deposits')f=a.filter(function(t){return t.type==='deposit';}); else if(currentTxTab==='withdrawals')f=a.filter(function(t){return t.type==='withdraw'||t.type==='bank_withdraw';}); else if(currentTxTab==='profits')f=a.filter(function(t){return t.type==='profit';}); else if(currentTxTab==='referrals')f=a.filter(function(t){return t.type==='referral';});
-        var tb=document.getElementById('userTransactions');
-        if(!f.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#808080;">No transactions.</td></tr>';}
-        else{f.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-            tb.innerHTML=f.map(function(t){
-                var bc=t.type==='deposit'?'deposit':t.type==='profit'?'profit':t.type==='referral'?'referral':t.type==='bank_withdraw'?'bank_withdraw':t.status==='pending'?'pending':t.status==='approved'?'approved':t.status==='declined'?'declined':'withdraw';
-                var ac=(t.type==='deposit'||t.type==='profit'||t.type==='referral')?'amount-green':t.status==='pending'?'amount-yellow':'amount-red';
-                var s=(t.type==='withdraw'||t.type==='bank_withdraw')?'':(t.type==='referral'||t.type==='deposit'||t.type==='profit')?'+':'';
-                var am=Math.abs(t.amount), sl=t.status==='pending'?'Pending':t.status==='approved'?'Approved':t.status==='declined'?'Declined':'Completed';
-                var det=t.description||'';
-                var typeLabel = t.type === 'bank_withdraw' ? 'Bank Withdraw' : (t.type === 'withdraw' ? 'Crypto W/D' : t.type);
-                var payoutBadge = '';
-                if (t.payoutRef) {
-                    payoutBadge = t.type === 'bank_withdraw' ? ' <span class="monnify-badge">PAID</span>' : ' <span class="np-badge">PAID</span>';
-                }
-                return '<tr><td>'+esc(t.date)+'</td><td><span class="badge '+bc+'">'+typeLabel+'</span>'+payoutBadge+'</td><td class="'+ac+'">'+s+fmtNaira(am)+'</td><td><span class="badge '+bc+'">'+sl+'</span></td><td style="font-size:12px;color:#b3b3b3;">'+esc(det)+'</td></tr>';
-            }).join('');
-        }
-    });
-}
-function copyRefLink(){var el=document.getElementById('refLink'),t=el.textContent;if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){el.textContent='Copied!';setTimeout(function(){refreshUserData();},2000);});}else{var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);el.textContent='Copied!';setTimeout(function(){refreshUserData();},2000);}}
-
-// ============================================================
-// DEPOSIT (Monnify in NGN)
-// ============================================================
-// ============================================================
-// DEPOSIT (Monnify in NGN)
-// ============================================================
-function showDepositModal(){
-    loadData().then(function(){
-        if(!appData.settings||!appData.settings.monnifyApiKey||!appData.settings.monnifyContractCode){alert('Monnify not configured. Admin must set API Key and Contract Code first.');return;}
-        document.getElementById('depositError').textContent='';document.getElementById('depositAmount').value='';document.getElementById('depositEmail').value=(currentUserData&&currentUserData.email)||'';
-        document.getElementById('depositInfo').textContent='Minimum deposit: '+fmtNaira(minDep())+' NGN.';
-        document.getElementById('depositModal').classList.add('active');
-    });
-}
-function processDeposit(){
-    var amt=parseFloat(document.getElementById('depositAmount').value), em=document.getElementById('depositEmail').value.trim(), e=document.getElementById('depositError');
-    if(!amt||amt<minDep()){e.textContent='Minimum '+fmtNaira(minDep())+' NGN.';return;} if(!em){e.textContent='Enter email.';return;}
-    if(!appData.settings||!appData.settings.monnifyApiKey||!appData.settings.monnifyContractCode){e.textContent='Monnify not configured.';return;}
-    var apiKey=appData.settings.monnifyApiKey, cc=appData.settings.monnifyContractCode, ref='NZ-'+Date.now()+'-'+Math.random().toString(36).substring(2,8);
-    closeModal('depositModal');
-    if(typeof MonnifySDK==='undefined'){alert('Monnify SDK not loaded.');return;}
-    MonnifySDK.initialize({
-        amount:amt, currency:"NGN", reference:ref,
-        customerFullName:(currentUserData&&(currentUserData.fullName||currentUser))||currentUser,
-        customerEmail:em, apiKey:apiKey, contractCode:cc,
-        paymentDescription:"NetflixZone deposit for "+currentUser, isTestMode:true,
-        metadata:{username:currentUser, depositType:"user_deposit"},
-        onComplete:function(resp){creditDeposit(ref,amt,em,resp);},
-        onClose:function(data){}
-    });
-}
-function creditDeposit(ref,amt,em,resp){
-    loadData().then(function(){
-        var user=appData.users[currentUser]; if(!user){alert('Session expired.');return;}
-        if(user.processedReferences&&user.processedReferences.indexOf(ref)!==-1)return;
-        var n=new Date(), d=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-        user.balance+=amt; user.invested+=amt; if(!user.processedReferences)user.processedReferences=[];
-        user.processedReferences.push(ref); if(!user.transactions)user.transactions=[];
-        var tr=(resp&&resp.transactionReference)?resp.transactionReference:ref;
-        user.transactions.push({date:d, type:'deposit', amount:amt, description:'Monnify - '+tr});
-        var refPromise=Promise.resolve(); if(user.referredBy&&appData.users[user.referredBy])refPromise=registerReferralBonus(currentUser,amt);
-        appData.users[currentUser]=user;
-        refPromise.then(function(){saveData().then(function(){document.getElementById('depositResultTitle').textContent='Payment Confirmed!';var extras=user.referredBy?'<br>Referrer got 20% bonus!':'';document.getElementById('depositResultContent').innerHTML=fmtNaira(amt)+' credited.'+extras+'<br><br><small style="color:#808080;">Ref: '+esc(tr)+'</small>';document.getElementById('depositResultModal').classList.add('active');});});
-    });
-}
-
-// ============================================================
-// WITHDRAWAL — Crypto & Bank
-// ============================================================
-var currentWithdrawType = 'crypto';
-
-function switchWithdrawType(type) {
-    currentWithdrawType = type;
-    document.querySelectorAll('.withdraw-type-tabs div').forEach(function(e){e.classList.remove('active');});
-    if (type === 'crypto') {
-        document.querySelector('.withdraw-type-tabs div:first-child').classList.add('active');
-        document.getElementById('cryptoWithdrawFields').classList.remove('hidden');
-        document.getElementById('bankWithdrawFields').classList.add('hidden');
-    } else {
-        document.querySelector('.withdraw-type-tabs div:last-child').classList.add('active');
-        document.getElementById('cryptoWithdrawFields').classList.add('hidden');
-        document.getElementById('bankWithdrawFields').classList.remove('hidden');
+async function handleDeposit(amount) {
+  state.error = '';
+  state.success = '';
+  render();
+  try {
+    const data = await apiCall('/deposit', 'POST', { amount });
+    if (data.checkoutUrl) {
+      window.location.href = data.checkoutUrl;
     }
-    document.getElementById('withdrawError').textContent = '';
+  } catch (err) {
+    state.error = err.message;
+    render();
+  }
 }
 
-function showWithdrawModal(){
-    if(currentUserData.status==='frozen'){alert('Withdrawals disabled.');return;}
-    var day=wdDay(); if(day!==-1){var t=new Date();if(t.getDay()!==day){alert('Withdrawals on '+wdName(day)+' only.');return;}}
-    document.getElementById('withdrawError').textContent='';
-    document.getElementById('withdrawInfo').textContent='Balance: '+fmtNaira(currentUserData.balance)+' - Min: '+fmtNaira(minWd())+' NGN';
-    document.getElementById('withdrawAmount').value='';document.getElementById('withdrawCurrency').value='USDT (TRC20)';document.getElementById('withdrawWallet').value='';
-    document.getElementById('withdrawBankAmount').value='';document.getElementById('withdrawBankName').value='';document.getElementById('withdrawBankAccount').value='';document.getElementById('withdrawBankHolder').value='';
-    switchWithdrawType('crypto');
-    document.getElementById('withdrawModal').classList.add('active');
+// ── RENDER ────────────────────────────────────────────────────────
+
+function render() {
+  const app = document.getElementById('app');
+  
+  // ── AUTH SCREEN ──
+  if (!state.token) {
+    app.innerHTML = `
+      <div class="card">
+        <h1>🌿 NATURE ZONE</h1>
+        <p class="subtitle">Investment Platform</p>
+        <hr />
+        <h2 style="margin-bottom:15px;font-size:20px;">${state.authMode === 'register' ? 'Create Account' : 'Welcome back'}</h2>
+        ${state.error ? `<div class="error">${state.error}</div>` : ''}
+        ${state.success ? `<div class="success">${state.success}</div>` : ''}
+        <form onsubmit="handleAuth(event)">
+          <input type="email" name="email" placeholder="Email address" required autocomplete="email" />
+          <input type="password" name="password" placeholder="Password" minlength="6" required autocomplete="${state.authMode === 'register' ? 'new-password' : 'current-password'}" />
+          <button type="submit" class="btn btn-primary" style="margin-top:12px;">${state.authMode === 'register' ? 'Register' : 'Sign In'}</button>
+        </form>
+        <p style="margin-top:16px;text-align:center;">
+          <span class="link" onclick="state.authMode = state.authMode === 'register' ? 'login' : 'register'; state.error=''; state.success=''; render();">
+            ${state.authMode === 'register' ? 'Already have an account? Sign in.' : "Don't have an account? Register."}
+          </span>
+        </p>
+        <p style="margin-top:12px;text-align:center;font-size:13px;color:#555;">
+          <span class="link" onclick="state.authMode='forgot';state.error='';state.success='';render();">Forgot password?</span>
+        </p>
+      </div>
+    `;
+    return;
+  }
+  
+  // ── FORGOT PASSWORD SCREEN ──
+  if (state.authMode === 'forgot') {
+    app.innerHTML = `
+      <div class="card">
+        <h1>🌿 NATURE ZONE</h1>
+        <p class="subtitle">Reset Password</p>
+        <hr />
+        <p style="text-align:center;color:#888;margin:10px 0;">Contact the admin to reset your password.</p>
+        <p style="text-align:center;font-size:13px;color:#555;">Email admin@naturezone.com or visit the <a href="https://naturezone-admin.onrender.com/admin" style="color:#2d7d46;">admin dashboard</a>.</p>
+        <p style="text-align:center;margin-top:15px;"><span class="link" onclick="state.authMode='login';state.error='';state.success='';render();">Back to Sign In</span></p>
+      </div>
+    `;
+    return;
+  }
+  
+  // ── LOADING ──
+  if (state.loading) {
+    app.innerHTML = `
+      <div class="card">
+        <div id="loading">
+          <div class="spinner"></div>
+          <p>Loading your dashboard...</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  // ── DASHBOARD ──
+  const user = state.user || { email: '', balance: 0, invested: 0, asset: 'Metallic Minerals', interest: 2.0 };
+  
+  app.innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h1 style="font-size:22px;margin:0;">🌿 NATURE ZONE</h1>
+        <span style="font-size:12px;color:#888;">${user.email}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <span style="font-size:13px;color:#2d7d46;">● Active</span>
+        <button class="btn btn-small btn-danger" onclick="handleLogout()" style="padding:4px 12px;font-size:12px;">Sign Out</button>
+      </div>
+      <hr />
+      
+      <div class="balance-big">₦${Number(user.balance || 0).toLocaleString()}</div>
+      <p style="text-align:center;color:#888;font-size:13px;">Available Balance (NGN)</p>
+      
+      <div class="stat-grid">
+        <div class="stat-box"><div class="label">Invested</div><div class="value">₦${Number(user.invested || 0).toLocaleString()}</div></div>
+        <div class="stat-box"><div class="label">Asset</div><div class="value" style="font-size:14px;">${user.asset || 'Metallic Minerals'}</div></div>
+        <div class="stat-box"><div class="label">Daily Interest</div><div class="value">${user.interest || 2.0}%</div></div>
+        <div class="stat-box"><div class="label">Status</div><div class="value" style="font-size:14px;color:#27ae60;">Active</div></div>
+      </div>
+      
+      ${state.error ? `<div class="error">${state.error}</div>` : ''}
+      ${state.success ? `<div class="success">${state.success}</div>` : ''}
+      
+      <hr />
+      
+      <div class="tab-bar">
+        <div class="tab ${state.activeTab === 'dashboard' ? 'active' : ''}" onclick="state.activeTab='dashboard';state.error='';state.success='';render();">📊 Dashboard</div>
+        <div class="tab ${state.activeTab === 'deposit' ? 'active' : ''}" onclick="state.activeTab='deposit';state.error='';state.success='';render();">💰 Deposit</div>
+        <div class="tab ${state.activeTab === 'withdraw' ? 'active' : ''}" onclick="state.activeTab='withdraw';state.error='';state.success='';render();">💸 Withdraw</div>
+        <div class="tab ${state.activeTab === 'history' ? 'active' : ''}" onclick="state.activeTab='history';state.error='';state.success='';render();">📜 History</div>
+      </div>
+      
+      ${renderTabContent(user)}
+      
+      <hr />
+      <div class="admin-link">
+        <a href="https://naturezone-admin.onrender.com/admin" target="_blank">🔐 Admin Dashboard (secured access)</a>
+      </div>
+    </div>
+  `;
 }
 
-function processWithdraw(){
-    var e=document.getElementById('withdrawError');
-    var day=wdDay(); if(day!==-1){var t=new Date();if(t.getDay()!==day){e.textContent='Restricted to '+wdName(day)+'.';return;}}
-    if(currentUserData.status==='frozen'){e.textContent='Withdrawals disabled.';return;}
-
-    if (currentWithdrawType === 'crypto') {
-        var amt=parseFloat(document.getElementById('withdrawAmount').value), cur=document.getElementById('withdrawCurrency').value, wal=document.getElementById('withdrawWallet').value.trim();
-        if(!amt||amt<minWd()){e.textContent='Min '+fmtNaira(minWd())+' NGN.';return;} if(!wal){e.textContent='Enter wallet.';return;} if(wal.length<10){e.textContent='Wallet too short.';return;} if(amt>currentUserData.balance){e.textContent='Insufficient balance.';return;}
-        loadData().then(function(){
-            var user=appData.users[currentUser]; if(!user){e.textContent='Session expired.';return;} if(user.status==='frozen'){e.textContent='Withdrawals disabled.';return;} if(amt>user.balance){e.textContent='Insufficient balance.';return;}
-            var n=new Date(), ds=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-            user.balance-=amt; if(!user.withdrawals)user.withdrawals=[];
-            user.withdrawals.push({date:ds, amount:amt, currency:cur, wallet:wal, status:'pending', type:'crypto'});
-            appData.users[currentUser]=user;
-            saveData().then(function(){closeModal('withdrawModal');loadData().then(function(){refreshUserData();});alert('Crypto withdrawal submitted! Amount deducted. Admin will review and payout via NOWPayments.');});
-        });
-    } else {
-        var amt=parseFloat(document.getElementById('withdrawBankAmount').value), bankSel=document.getElementById('withdrawBankName').value, acc=document.getElementById('withdrawBankAccount').value.trim(), holder=document.getElementById('withdrawBankHolder').value.trim();
-        if(!amt||amt<minWd()){e.textContent='Min '+fmtNaira(minWd())+' NGN.';return;} if(!bankSel){e.textContent='Select bank.';return;} if(!acc||acc.length<10){e.textContent='Enter valid 10-digit account number.';return;} if(!holder||holder.length<2){e.textContent='Enter account holder name.';return;} if(amt>currentUserData.balance){e.textContent='Insufficient balance.';return;}
-        var bParts=bankSel.split('|'), bName=bParts[0], bCode=bParts[1];
-        loadData().then(function(){
-            var user=appData.users[currentUser]; if(!user){e.textContent='Session expired.';return;} if(user.status==='frozen'){e.textContent='Withdrawals disabled.';return;} if(amt>user.balance){e.textContent='Insufficient balance.';return;}
-            var n=new Date(), ds=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-            user.balance-=amt; if(!user.withdrawals)user.withdrawals=[];
-            user.withdrawals.push({date:ds, amount:amt, type:'bank', bankName:bName, bankCode:bCode, accountNumber:acc, accountHolder:holder, status:'pending'});
-            appData.users[currentUser]=user;
-            saveData().then(function(){closeModal('withdrawModal');loadData().then(function(){refreshUserData();});alert('Bank withdrawal submitted! Amount deducted. Admin will review and payout via Monnify.');});
-        });
-    }
+function renderTabContent(user) {
+  const tx = state.transactions || [];
+  
+  switch (state.activeTab) {
+    case 'dashboard':
+      return `
+        <div style="text-align:center;padding:10px 0;">
+          <p style="color:#888;font-size:14px;">Current Investment Asset</p>
+          <p style="font-size:18px;font-weight:600;">⛏️ ${user.asset || 'Metallic Minerals'}</p>
+          <p style="font-size:13px;color:#2d7d46;">Interest: ${user.interest || 2.0}% daily</p>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <button class="btn btn-primary" onclick="state.activeTab='deposit';state.error='';state.success='';render();" style="flex:1;">💰 Deposit</button>
+          <button class="btn btn-secondary" onclick="state.activeTab='withdraw';state.error='';state.success='';render();" style="flex:1;">💸 Withdraw</button>
+        </div>
+        <div style="margin-top:15px;">
+          <p style="font-size:13px;font-weight:600;margin-bottom:8px;">Recent Transactions</p>
+          ${tx.length === 0 ? '<p style="color:#555;font-size:13px;">No transactions yet.</p>' : `
+          <table class="tx-table">
+            <tr><th>Type</th><th>Amount</th><th>Status</th></tr>
+            ${tx.slice(0, 5).map(t => `
+              <tr>
+                <td>${t.type || t.details || '-'}</td>
+                <td>₦${Number(t.amount || 0).toLocaleString()}</td>
+                <td><span class="badge badge-${(t.status || 'pending').toLowerCase()}">${t.status || 'Pending'}</span></td>
+              </tr>
+            `).join('')}
+          </table>`}
+        </div>
+      `;
+      
+    case 'deposit':
+      return `
+        <div style="text-align:center;padding:10px 0;">
+          <p style="color:#888;font-size:14px;">Fund via Monnify (Bank Transfer / Card / USSD)</p>
+        </div>
+        <div class="deposit-amounts">
+          <button onclick="handleDeposit(1000)">₦1,000</button>
+          <button onclick="handleDeposit(5000)">₦5,000</button>
+          <button onclick="handleDeposit(10000)">₦10,000</button>
+          <button onclick="handleDeposit(25000)">₦25,000</button>
+          <button onclick="handleDeposit(50000)">₦50,000</button>
+          <button onclick="handleDeposit(100000)">₦100,000</button>
+        </div>
+        <div style="margin-top:15px;display:flex;gap:10px;">
+          <input type="number" id="custom-deposit" placeholder="Custom amount (NGN)" min="1000" style="flex:1;" />
+          <button class="btn btn-primary btn-small" onclick="const amt=document.getElementById('custom-deposit').value;if(amt>=1000)handleDeposit(amt);else state.error='Minimum deposit: ₦1,000';render();" style="width:auto;">Deposit</button>
+        </div>
+        <p style="color:#555;font-size:12px;margin-top:8px;">Minimum deposit: ₦1,000. You'll be redirected to Monnify to complete payment.</p>
+      `;
+      
+    case 'withdraw':
+      return `
+        <div style="text-align:center;padding:10px 0;">
+          <p style="color:#888;font-size:14px;">Available: <strong style="color:#2d7d46;">₦${Number(user.balance || 0).toLocaleString()}</strong></p>
+        </div>
+        <div class="withdraw-section">
+          <label>Amount (NGN)</label>
+          <input type="number" id="withdraw-amount" placeholder="Enter amount" min="500" max="${user.balance || 0}" />
+          <label>Bank Account Number</label>
+          <input type="text" id="withdraw-account" placeholder="Account number" />
+          <label>Bank Name</label>
+          <input type="text" id="withdraw-bank" placeholder="e.g. GTBank, Access Bank" />
+          <label>Account Name</label>
+          <input type="text" id="withdraw-name" placeholder="Full name on account" />
+          <button class="btn btn-primary" style="margin-top:12px;" onclick="submitWithdraw()">💸 Submit Withdrawal Request</button>
+          <p style="color:#555;font-size:12px;margin-top:8px;">Withdrawals are processed on ${user.withdrawalDay || 'Friday'} after admin approval.</p>
+        </div>
+      `;
+      
+    case 'history':
+      return `
+        <div style="padding:10px 0;">
+          <p style="font-size:13px;font-weight:600;margin-bottom:10px;">Transaction History</p>
+          ${tx.length === 0 ? '<p style="color:#555;font-size:13px;text-align:center;padding:20px 0;">No transactions yet.</p>' : `
+          <table class="tx-table">
+            <tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th><th>Details</th></tr>
+            ${tx.map(t => `
+              <tr>
+                <td style="font-size:11px;">${t.date ? new Date(t.date).toLocaleDateString() : '-'}</td>
+                <td>${t.type || 'Transaction'}</td>
+                <td>₦${Number(t.amount || 0).toLocaleString()}</td>
+                <td><span class="badge badge-${(t.status || 'pending').toLowerCase()}">${t.status || 'Pending'}</span></td>
+                <td style="font-size:11px;color:#888;">${t.details || '-'}</td>
+              </tr>
+            `).join('')}
+          </table>`}
+        </div>
+      `;
+      
+    default:
+      return '<p>Select a tab above.</p>';
+  }
 }
 
-// ============================================================
-// PROFILE
-// ============================================================
-function showProfileModal(){
-    var d=currentUserData;
-    document.getElementById('profileInfo').innerHTML=
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Name:</strong> '+esc(d.fullName)+'</div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Username:</strong> '+esc(currentUser)+'</div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Email:</strong> '+esc(d.email)+'</div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Phone:</strong> '+esc(d.phone||'N/A')+'</div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Plan:</strong> '+esc(d.plan)+'</div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Status:</strong> <span class="badge '+d.status+'">'+esc(d.status)+'</span></div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Referral Code:</strong> '+esc(currentUser)+'</div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Referred By:</strong> '+(d.referredBy||'None')+'</div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Referral Bonus:</strong> <span class="amount-green">'+fmtNaira(d.referralBonus||0)+'</span></div>'+
-        '<div style="margin-bottom:12px;"><strong style="color:#808080;">Joined:</strong> '+esc(d.createdAt)+'</div>'+
-        '<div><strong style="color:#808080;">Balance:</strong> <span class="amount-green">'+fmtNaira(d.balance)+'</span></div>';
-    document.getElementById('profileModal').classList.add('active');
-}
-function closeModal(id){document.getElementById(id).classList.remove('active');}
-
-// ============================================================
-// ADMIN FUNCTIONS
-// ============================================================
-function refreshAdminData() {
-    loadData().then(function() {
-        if (!appData) { document.getElementById('adminUserCards').innerHTML = '<p style="color:#E50914;">Failed.</p>'; return; }
-
-        // Total users count
-        var allUsernames = Object.keys(appData.users);
-        var totalUsers = allUsernames.length;
-        var activeUsers = allUsernames.filter(function(un){ return appData.users[un].status === 'active'; }).length;
-        document.getElementById('adminTotalUsers').textContent = totalUsers;
-        document.getElementById('adminActiveUsers').textContent = activeUsers;
-
-        document.getElementById('adminInterestRate').value = (appData.settings && appData.settings.interestRate) || 2;
-        document.getElementById('adminMinDeposit').value = minDep();
-        document.getElementById('adminMinWithdraw').value = minWd();
-        document.getElementById('adminWithdrawDay').value = wdDay();
-        document.getElementById('currentInterestDisplay').textContent = (appData.settings && appData.settings.interestRate || 2) + '%';
-        document.getElementById('currentMinDeposit').textContent = Number(minDep()).toLocaleString('en-NG');
-        document.getElementById('currentMinWithdraw').textContent = Number(minWd()).toLocaleString('en-NG');
-        document.getElementById('currentWithdrawDayDisplay').textContent = wdName(wdDay());
-
-        if (appData.settings) {
-            document.getElementById('adminMonnifyApiKey').value = appData.settings.monnifyApiKey || '';
-            document.getElementById('adminMonnifyContractCode').value = appData.settings.monnifyContractCode || '';
-            document.getElementById('adminMonnifySecretKey').value = appData.settings.monnifySecretKey || '';
-            document.getElementById('adminMonnifySourceAccount').value = appData.settings.monnifySourceAccount || '';
-            document.getElementById('adminNPApiKey').value = appData.settings.npApiKey || '';
-            document.getElementById('adminNPSecretKey').value = appData.settings.npSecretKey || '';
-            document.getElementById('adminNPEmail').value = appData.settings.npEmail || '';
-            document.getElementById('adminNPPassword').value = appData.settings.npPassword || '';
-        }
-
-        // User cards
-        var cardsEl = document.getElementById('adminUserCards');
-        var sortedUsers = allUsernames.sort();
-        if (!sortedUsers.length) {
-            cardsEl.innerHTML = '<p style="color:#808080;">No users.</p>';
-        } else {
-            cardsEl.innerHTML = sortedUsers.map(function(un) {
-                var u = appData.users[un];
-                return '<div class="admin-card">' +
-                    '<div class="user-header"><h4>' + esc(un) + '</h4><span class="status-badge ' + esc(u.status || 'active') + '">' + esc(u.status || 'active') + '</span></div>' +
-                    '<div class="user-detail"><strong>Name:</strong> ' + esc(u.fullName) + '</div>' +
-                    '<div class="user-detail"><strong>Email:</strong> ' + esc(u.email) + '</div>' +
-                    '<div class="user-detail"><strong>Balance:</strong> ' + fmtNaira(u.balance) + '</div>' +
-                    '<div class="user-detail"><strong>Invested:</strong> ' + fmtNaira(u.invested) + '</div>' +
-                    '<div class="user-detail"><strong>Profit:</strong> ' + fmtNaira(u.profit) + '</div>' +
-                    '<div class="user-detail"><strong>Ref Bonus:</strong> ' + fmtNaira(u.referralBonus || 0) + '</div>' +
-                    '<div class="user-detail"><strong>Plan:</strong> ' + esc(u.plan) + ' | <strong>Ref By:</strong> ' + (u.referredBy || '-') + '</div>' +
-                    '<div class="admin-actions">' +
-                    '<select id="userStatus_' + un + '"><option value="active"' + (u.status === 'active' ? ' selected' : '') + '>Active</option><option value="frozen"' + (u.status === 'frozen' ? ' selected' : '') + '>Frozen</option><option value="closed"' + (u.status === 'closed' ? ' selected' : '') + '>Closed</option></select>' +
-                    '<button class="btn-blue" onclick="adminSetStatus(\'' + un + '\')">Set</button>' +
-                    '<button class="btn-green" onclick="adminAddBalance(\'' + un + '\')">+Balance</button>' +
-                    '</div></div>';
-            }).join('');
-        }
-
-        renderPendingWithdrawals();
-    });
+async function submitWithdraw() {
+  const amount = document.getElementById('withdraw-amount').value;
+  const account = document.getElementById('withdraw-account').value;
+  const bank = document.getElementById('withdraw-bank').value;
+  const name = document.getElementById('withdraw-name').value;
+  
+  if (!amount || amount < 500) { state.error = 'Minimum withdrawal: ₦500'; render(); return; }
+  if (!account || account.length < 10) { state.error = 'Enter a valid account number'; render(); return; }
+  if (!bank) { state.error = 'Enter your bank name'; render(); return; }
+  if (!name) { state.error = 'Enter the account holder name'; render(); return; }
+  if (amount > (state.user?.balance || 0)) { state.error = 'Insufficient balance'; render(); return; }
+  
+  try {
+    const data = await apiCall('/withdraw', 'POST', { amount, accountNumber: account, bankName: bank, accountName: name });
+    state.success = 'Withdrawal request submitted! Pending admin approval.';
+    state.error = '';
+    loadDashboard();
+  } catch (err) {
+    state.error = err.message;
+    render();
+  }
 }
 
-function renderPendingWithdrawals() {
-    var pending = [];
-    for (var un in appData.users) {
-        var u = appData.users[un];
-        if (u.withdrawals) {
-            u.withdrawals.forEach(function(w, i) {
-                if (w.status === 'pending') pending.push({ username: un, index: i, data: w });
-            });
-        }
-    }
-    var el = document.getElementById('pendingWithdrawals');
-    if (!pending.length) { el.innerHTML = '<p style="color:#808080;">None pending.</p>'; return; }
-    el.innerHTML = pending.map(function(p) {
-        var w = p.data;
-        var isBank = w.type === 'bank';
-        var detailHtml = isBank
-            ? '<div style="font-size:12px;color:#b3b3b3;">🏦 ' + esc(w.bankName) + ' | Acct: ' + esc(w.accountNumber) + ' | ' + esc(w.accountHolder) + '</div>'
-            : '<div style="font-size:12px;color:#b3b3b3;">💎 ' + esc(w.currency) + ' \u2192 ' + esc(w.wallet) + '</div>';
-        var typeLabel = isBank ? '<span class="badge bank_withdraw">Bank</span>' : '<span class="badge withdraw">Crypto</span>';
-        return '<div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:10px;">' +
-            '<div style="font-size:14px;"><strong>User:</strong> ' + esc(p.username) + ' - <strong>' + fmtNaira(w.amount) + '</strong> ' + typeLabel + '</div>' +
-            detailHtml +
-            '<div style="font-size:11px;color:#808080;">' + esc(w.date) + '</div>' +
-            '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">' +
-            '<button class="btn-green" onclick="adminApproveWithdraw(\'' + p.username + '\',' + p.index + ')">✅ Approve & Auto-Payout</button>' +
-            '<button class="btn-red" onclick="adminDeclineWithdraw(\'' + p.username + '\',' + p.index + ')">❌ Decline</button>' +
-            '</div></div>';
-    }).join('');
+// ── INIT ──────────────────────────────────────────────────────────
+
+if (state.token) {
+  loadDashboard();
+} else {
+  state.loading = false;
+  render();
 }
-
-function adminSetStatus(un) {
-    var s = document.getElementById('userStatus_' + un).value;
-    loadData().then(function() {
-        if (appData.users[un]) { appData.users[un].status = s; saveData().then(function() { refreshAdminData(); }); }
-    });
-}
-
-function adminAddBalance(un) {
-    var amt = prompt('Amount to add to ' + un + ' (NGN):');
-    if (!amt || isNaN(amt) || parseFloat(amt) <= 0) return;
-    loadData().then(function() {
-        if (appData.users[un]) {
-            appData.users[un].balance += parseFloat(amt);
-            appData.users[un].invested += parseFloat(amt);
-            var n = new Date(), d = n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-            if (!appData.users[un].transactions) appData.users[un].transactions = [];
-            appData.users[un].transactions.push({date:d, type:'deposit', amount:parseFloat(amt), description:'Admin credit'});
-            saveData().then(function() { refreshAdminData(); });
-        }
-    });
-}
-
-// ============================================================
-// ADMIN — Auto-Payout on Approval
-// ============================================================
-function adminApproveWithdraw(un, idx) {
-    loadData().then(function() {
-        if (!appData.users[un] || !appData.users[un].withdrawals || !appData.users[un].withdrawals[idx]) return;
-        var w = appData.users[un].withdrawals[idx];
-        if (!confirm('Approve ' + fmtNaira(w.amount) + ' withdrawal for ' + un + '?\n\nThe system will attempt to auto-payout via ' + (w.type === 'bank' ? 'Monnify API' : 'NOWPayments API') + '.')) return;
-
-        w.status = 'approved';
-        w.approvedAt = new Date().toISOString();
-
-        // Try auto-payout
-        if (w.type === 'bank') {
-            // Bank payout via Monnify disbursement API
-            var sk = appData.settings && appData.settings.monnifySecretKey;
-            var ak = appData.settings && appData.settings.monnifyApiKey;
-            var src = appData.settings && appData.settings.monnifySourceAccount;
-            var ref = 'NZ-PAY-' + Date.now() + '-' + Math.random().toString(36).substring(2,6).toUpperCase();
-
-            if (ak && sk && src && w.bankCode && w.accountNumber) {
-                // Encode API Key + Secret Key for Basic Auth
-                var basicAuth = btoa(ak + ':' + sk);
-                w.payoutRef = ref;
-                w.payoutStatus = 'initiating';
-
-                // Step 1: Get access token
-                fetch('https://sandbox.monnify.com/api/v1/auth/login', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Basic ' + basicAuth }
-                })
-                .then(function(r){ return r.json(); })
-                .then(function(authRes){
-                    if (!authRes || !authRes.responseBody || !authRes.responseBody.accessToken) {
-                        w.payoutStatus = 'auth_failed';
-                        saveData().then(function(){ refreshAdminData(); });
-                        alert('Monnify auth failed. Withdrawal approved but payout could not be initiated.\nCheck API Key/Secret.');
-                        return;
-                    }
-                    var token = authRes.responseBody.accessToken;
-                    // Step 2: Reserve account name inquiry (optional but recommended)
-                    // Step 3: Initiate single transfer
-                    var payoutData = {
-                        amount: w.amount,
-                        reference: ref,
-                        narration: 'NetflixZone withdrawal payout to ' + un,
-                        destinationBankCode: w.bankCode,
-                        destinationAccountNumber: w.accountNumber,
-                        sourceAccountNumber: src,
-                        currency: 'NGN',
-                        async: true
-                    };
-                    return fetch('https://sandbox.monnify.com/api/v2/disbursements/single', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + token,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payoutData)
-                    });
-                })
-                .then(function(r){ return r.json(); })
-                .then(function(pRes){
-                    if (pRes && pRes.requestSuccessful) {
-                        w.payoutStatus = 'paid';
-                        w.payoutResponse = JSON.stringify(pRes);
-                        saveData().then(function(){ refreshAdminData(); });
-                        document.getElementById('payoutResultTitle').textContent = '✅ Bank Payout Initiated!';
-                        document.getElementById('payoutResultContent').innerHTML = 'Monnify transfer of ' + fmtNaira(w.amount) + ' to ' + esc(w.bankName) + ' (' + esc(w.accountNumber) + ') initiated.<br><br>Ref: ' + esc(ref);
-                        document.getElementById('payoutResultModal').classList.add('active');
-                    } else {
-                        w.payoutStatus = 'payout_failed';
-                        w.payoutError = pRes ? pRes.responseMessage : 'Unknown error';
-                        saveData().then(function(){ refreshAdminData(); });
-                        alert('Monnify payout failed: ' + (pRes ? pRes.responseMessage : 'No response') + '\nWithdrawal approved but payment not sent.');
-                    }
-                })
-                .catch(function(err){
-                    w.payoutStatus = 'error';
-                    w.payoutError = err.message || String(err);
-                    saveData().then(function(){ refreshAdminData(); });
-                    alert('Monnify API error: ' + err.message + '\nWithdrawal approved but payout not sent.');
-                });
-            } else {
-                w.payoutStatus = 'no_config';
-                saveData().then(function(){ refreshAdminData(); });
-                alert('Monnify not fully configured. Withdrawal approved but bank payout could not be sent.\nSet API Key, Secret, and Source Account in settings.');
-            }
-        } else {
-            // Crypto payout via NOWPayments API
-            var npKey = appData.settings && appData.settings.npApiKey;
-            var npEmail = appData.settings && appData.settings.npEmail;
-            var npPass = appData.settings && appData.settings.npPassword;
-            var ref = 'NZ-CRYPTO-' + Date.now() + '-' + Math.random().toString(36).substring(2,6).toUpperCase();
-
-            if (npKey && npEmail && npPass && w.wallet && w.currency) {
-                w.payoutRef = ref;
-                w.payoutStatus = 'initiating';
-
-                // Extract currency code from selection like "USDT (TRC20)" -> "usdttrc20" or "Bitcoin (BTC)" -> "btc"
-                var curMap = {
-                    'USDT (TRC20)': 'usdttrc20',
-                    'Bitcoin (BTC)': 'btc',
-                    'Ethereum (ETH)': 'eth',
-                    'Tron (TRX)': 'trx',
-                    'Litecoin (LTC)': 'ltc',
-                    'Dogecoin (DOGE)': 'doge',
-                    'Solana (SOL)': 'sol'
-                };
-                var payoutCurrency = curMap[w.currency] || w.currency.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-                var ref2 = ref;
-                // Step 1: Authenticate to get JWT
-                fetch('https://api.nowpayments.io/v1/auth', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: npEmail, password: npPass })
-                })
-                .then(function(r){ return r.json(); })
-                .then(function(authRes){
-                    var jwt = authRes && authRes.token;
-                    if (!jwt) {
-                        w.payoutStatus = 'auth_failed';
-                        saveData().then(function(){ refreshAdminData(); });
-                        alert('NOWPayments auth failed. Crypto withdrawal approved but payout not sent.\nCheck email/password.');
-                        return;
-                    }
-                    // Step 2: Create payout
-                    return fetch('https://api.nowpayments.io/v1/payout', {
-                        method: 'POST',
-                        headers: {
-                            'x-api-key': npKey,
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + jwt
-                        },
-                        body: JSON.stringify({
-                            withdrawals: [{
-                                address: w.wallet,
-                                currency: payoutCurrency,
-                                amount: parseFloat(w.amount)  // Amount in fiat; NOWPayments will convert if needed
-                            }],
-                            payout_description: 'NetflixZone withdrawal for ' + un
-                        })
-                    });
-                })
-                .then(function(r){ return r.json(); })
-                .then(function(pRes){
-                    if (pRes && pRes.id) {
-                        w.payoutStatus = 'paid';
-                        w.payoutResponse = JSON.stringify(pRes);
-                        w.payoutRef = ref;
-                        saveData().then(function(){ refreshAdminData(); });
-                        document.getElementById('payoutResultTitle').textContent = '✅ Crypto Payout Initiated!';
-                        document.getElementById('payoutResultContent').innerHTML = 'NOWPayments payout of ' + fmtNaira(w.amount) + ' to ' + esc(w.currency) + ' wallet (' + esc(w.wallet.substring(0,12)) + '...) initiated.<br><br>Payout ID: ' + esc(pRes.id);
-                        document.getElementById('payoutResultModal').classList.add('active');
-                    } else {
-                        w.payoutStatus = 'payout_failed';
-                        w.payoutError = pRes ? JSON.stringify(pRes) : 'Unknown error';
-                        saveData().then(function(){ refreshAdminData(); });
-                        alert('NOWPayments payout failed: ' + (pRes ? (pRes.message || JSON.stringify(pRes)) : 'No response') + '\nWithdrawal approved but crypto not sent.');
-                    }
-                })
-                .catch(function(err){
-                    w.payoutStatus = 'error';
-                    w.payoutError = err.message || String(err);
-                    saveData().then(function(){ refreshAdminData(); });
-                    alert('NOWPayments API error: ' + err.message + '\nWithdrawal approved but payout not sent.');
-                });
-            } else {
-                w.payoutStatus = 'no_config';
-                saveData().then(function(){ refreshAdminData(); });
-                alert('NOWPayments not fully configured. Withdrawal approved but crypto payout could not be sent.\nSet API Key, Email, and Password in settings.');
-            }
-        }
-
-        // If we didn't hit any async path, just save and refresh
-        if (w.payoutStatus === 'approved' || !w.payoutStatus) {
-            saveData().then(function() { refreshAdminData(); });
-        }
-    });
-}
-
-function adminDeclineWithdraw(un, idx) {
-    loadData().then(function() {
-        if (!appData.users[un] || !appData.users[un].withdrawals || !appData.users[un].withdrawals[idx]) return;
-        if (!confirm('Decline withdrawal for ' + un + '? Balance will be refunded.')) return;
-        var amt = appData.users[un].withdrawals[idx].amount;
-        appData.users[un].withdrawals[idx].status = 'declined';
-        appData.users[un].balance += amt;
-        saveData().then(function() { refreshAdminData(); });
-    });
-}
-
-function adminUpdateInterest() {
-    var r = parseFloat(document.getElementById('adminInterestRate').value);
-    if (isNaN(r) || r < 0) return;
-    loadData().then(function() {
-        if (!appData.settings) appData.settings = {};
-        appData.settings.interestRate = r;
-        saveData().then(function() { refreshAdminData(); document.getElementById('adminActionMsg').textContent = 'Daily interest set to ' + r + '%'; });
-    });
-}
-
-function adminUpdateMinAmounts() {
-    var d = parseFloat(document.getElementById('adminMinDeposit').value);
-    var w = parseFloat(document.getElementById('adminMinWithdraw').value);
-    if (isNaN(d) || d < 100 || isNaN(w) || w < 100) return;
-    loadData().then(function() {
-        if (!appData.settings) appData.settings = {};
-        appData.settings.minDeposit = d;
-        appData.settings.minWithdraw = w;
-        saveData().then(function() { refreshAdminData(); document.getElementById('adminActionMsg').textContent = 'Min deposit: ' + fmtNaira(d) + ' | Min withdraw: ' + fmtNaira(w); });
-    });
-}
-
-function adminUpdateWithdrawDay() {
-    var day = parseInt(document.getElementById('adminWithdrawDay').value);
-    loadData().then(function() {
-        if (!appData.settings) appData.settings = {};
-        appData.settings.withdrawDay = day;
-        saveData().then(function() { refreshAdminData(); document.getElementById('adminActionMsg').textContent = 'Withdrawal day: ' + wdName(day); });
-    });
-}
-
-function adminSaveMonnifyKeys() {
-    var api = document.getElementById('adminMonnifyApiKey').value.trim();
-    var cc = document.getElementById('adminMonnifyContractCode').value.trim();
-    var sk = document.getElementById('adminMonnifySecretKey').value.trim();
-    var src = document.getElementById('adminMonnifySourceAccount').value.trim();
-    loadData().then(function() {
-        if (!appData.settings) appData.settings = {};
-        appData.settings.monnifyApiKey = api;
-        appData.settings.monnifyContractCode = cc;
-        appData.settings.monnifySecretKey = sk;
-        appData.settings.monnifySourceAccount = src;
-        saveData().then(function() { document.getElementById('monnifyMsg').textContent = 'Monnify keys saved!'; setTimeout(function() { document.getElementById('monnifyMsg').textContent = ''; }, 3000); });
-    });
-}
-
-function adminSaveNPKeys() {
-    var apik = document.getElementById('adminNPApiKey').value.trim();
-    var sk = document.getElementById('adminNPSecretKey').value.trim();
-    var em = document.getElementById('adminNPEmail').value.trim();
-    var pw = document.getElementById('adminNPPassword').value.trim();
-    loadData().then(function() {
-        if (!appData.settings) appData.settings = {};
-        appData.settings.npApiKey = apik;
-        appData.settings.npSecretKey = sk;
-        appData.settings.npEmail = em;
-        appData.settings.npPassword = pw;
-        saveData().then(function() { document.getElementById('npMsg').textContent = 'NOWPayments keys saved!'; setTimeout(function() { document.getElementById('npMsg').textContent = ''; }, 3000); });
-    });
-}
-
-function adminCreateUser() {
-    var u = document.getElementById('adminNewUser').value.trim();
-    var p = document.getElementById('adminNewPass').value.trim();
-    var n = document.getElementById('adminNewName').value.trim();
-    if (!u || !p || !n) { document.getElementById('adminCreateMsg').textContent = 'Fill all fields.'; return; }
-    loadData().then(function() {
-        if (appData.users[u]) { document.getElementById('adminCreateMsg').textContent = 'Already exists.'; return; }
-        var nd = new Date(), d = nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0')+'-'+String(nd.getDate()).padStart(2,'0');
-        appData.users[u] = { fullName:n, email:u+'@netflixzone.local', phone:'', password:p, balance:0, invested:0, profit:0, referralBonus:0, referralCode:u, referredBy:'', plan:'Basic', status:'active', createdAt:d, lastInterestDate:'', transactions:[], withdrawals:[], referrals:[], processedReferences:[] };
-        saveData().then(function() { document.getElementById('adminCreateMsg').textContent = 'Created user: ' + u; ['adminNewUser','adminNewPass','adminNewName'].forEach(function(i){document.getElementById(i).value='';}); refreshAdminData(); });
-    });
-}
-
-function changeAdminPassword() {
-    var cur = document.getElementById('adminCurrentPass').value;
-    var nw = document.getElementById('adminNewPassInput').value;
-    if (!cur || !nw) { document.getElementById('changePassMsg').textContent = 'Fill both fields.'; return; }
-    loadData().then(function() {
-        if (appData.admin.password !== cur) { document.getElementById('changePassMsg').textContent = 'Current password wrong.'; return; }
-        appData.admin.password = nw;
-        saveData().then(function() { document.getElementById('changePassMsg').innerHTML = 'Changed.'; document.getElementById('adminCurrentPass').value = ''; document.getElementById('adminNewPassInput').value = ''; });
-    });
-}
-
-function adminResetUserPassword() {
-    var u = document.getElementById('adminResetUser').value.trim();
-    var p = document.getElementById('adminResetUserPass').value.trim();
-    if (!u || !p) { document.getElementById('resetUserPassMsg').textContent = 'Fill both.'; return; }
-    loadData().then(function() {
-        if (!appData.users[u]) { document.getElementById('resetUserPassMsg').textContent = 'User not found.'; return; }
-        appData.users[u].password = p;
-        saveData().then(function() { document.getElementById('resetUserPassMsg').innerHTML = 'Password reset for ' + u; document.getElementById('adminResetUser').value = ''; document.getElementById('adminResetUserPass').value = ''; });
-    });
-}
-
-function adminPayAllProfits() {
-    if (!confirm('Apply daily interest to ALL active users?')) return;
-    loadData().then(function() {
-        var r = (appData.settings && appData.settings.interestRate) || 2;
-        var today = new Date().toDateString();
-        var count = 0;
-        for (var un in appData.users) {
-            var u = appData.users[un];
-            if (u.status === 'active' && u.balance > 0 && u.lastInterestDate !== today) {
-                var i = u.balance * (r / 100);
-                u.balance += i;
-                u.profit += i;
-                if (!u.transactions) u.transactions = [];
-                var n = new Date(), d = n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
-                u.transactions.push({date:d, type:'profit', amount:i, description:'Daily interest '+r+'%'});
-                u.lastInterestDate = today;
-                count++;
-            }
-        }
-        saveData().then(function() { document.getElementById('adminActionMsg').textContent = 'Applied to ' + count + ' users.'; refreshAdminData(); });
-    });
-}
-
-function adminResetAll() {
-    if (!confirm('WIPE ALL USER DATA? This cannot be undone!')) return;
-    if (!confirm('Are you sure? All users, transactions, and balances will be deleted.')) return;
-    loadData().then(function() {
-        var admin = appData.admin;
-        appData = { admin: admin, settings: appData.settings || { interestRate:2, minDeposit:1000, minWithdraw:500, withdrawDay:5, monnifyApiKey:'', monnifyContractCode:'', monnifySecretKey:'', monnifySourceAccount:'', npApiKey:'', npSecretKey:'', npEmail:'', npPassword:'' }, users: {} };
-        saveData().then(function() { refreshAdminData(); document.getElementById('adminActionMsg').textContent = 'Data reset.'; });
-    });
-}
-
-// ============================================================
-// BOOT - Initialize defaults on page load
-// ============================================================
-(function boot() {
-    if (!document.getElementById('authContainer')) return;
-    fetch(JSONBIN_URL, { headers: getHeaders() })
-        .then(function(r) { return r.json(); })
-        .then(function(j) {
-            appData = j.record;
-            if (!appData.admin) appData.admin = { username: 'admin', password: 'admin123' };
-            if (!appData.settings) appData.settings = { interestRate: 2, minDeposit: 1000, minWithdraw: 500, withdrawDay: 5, monnifyApiKey:'', monnifyContractCode:'', monnifySecretKey:'', monnifySourceAccount:'', npApiKey:'', npSecretKey:'', npEmail:'', npPassword:'' };
-            if (!appData.users) appData.users = {};
-            return saveData();
-        })
-        .catch(function() {
-            console.log('Boot: initializing new data structure');
-            appData = {
-                admin: { username: 'admin', password: 'admin123' },
-                settings: { interestRate: 2, minDeposit: 1000, minWithdraw: 500, withdrawDay: 5, monnifyApiKey:'', monnifyContractCode:'', monnifySecretKey:'', monnifySourceAccount:'', npApiKey:'', npSecretKey:'', npEmail:'', npPassword:'' },
-                users: {}
-            };
-            saveData();
-        });
-})();
 </script>
 </body>
-</html>     
+</html>
