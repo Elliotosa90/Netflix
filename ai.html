@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>∞ AI Website Builder</title>
+<title>∞ SiteForge AI — Website Builder</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -32,7 +32,6 @@
     flex-direction: column;
   }
 
-  /* ─── HEADER ─── */
   header {
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--border);
@@ -62,7 +61,6 @@
     letter-spacing: 0.3px;
   }
 
-  /* ─── LAYOUT ─── */
   .app {
     flex: 1;
     display: grid;
@@ -75,7 +73,6 @@
     .preview-panel { border-left: none !important; border-top: 1px solid var(--border); }
   }
 
-  /* ─── LEFT PANEL ─── */
   .editor-panel {
     display: flex;
     flex-direction: column;
@@ -95,7 +92,6 @@
     line-height: 1.5;
   }
 
-  /* ─── EXAMPLES ─── */
   .examples {
     display: flex;
     flex-wrap: wrap;
@@ -118,7 +114,6 @@
     border-color: var(--accent);
   }
 
-  /* ─── TEXTAREA ─── */
   textarea {
     width: 100%;
     min-height: 120px;
@@ -136,7 +131,6 @@
   textarea:focus { border-color: var(--accent); }
   textarea::placeholder { color: var(--text2); opacity: 0.6; }
 
-  /* ─── OPTIONS ─── */
   .options {
     display: flex;
     flex-wrap: wrap;
@@ -170,7 +164,6 @@
     background-repeat: no-repeat;
   }
 
-  /* ─── BUTTONS ─── */
   .btn-row {
     display: flex;
     gap: 0.75rem;
@@ -216,7 +209,6 @@
   .btn-danger:hover { background: var(--orange); color: #fff; }
   .btn-sm { padding: 0.45rem 1rem; font-size: 0.8rem; }
 
-  /* ─── STATUS ─── */
   .status {
     font-size: 0.82rem;
     padding: 0.6rem 1rem;
@@ -236,13 +228,13 @@
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     display: none;
+    flex-shrink: 0;
   }
   .status.generating .spinner { display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .status.error { border-color: var(--orange); color: var(--orange); }
   .status.done { border-color: var(--green); color: var(--green); }
 
-  /* ─── PREVIEW PANEL ─── */
   .preview-panel {
     border-left: 1px solid var(--border);
     display: flex;
@@ -296,7 +288,6 @@
   .empty-preview h3 { font-weight: 600; color: #999; font-size: 1rem; }
   .empty-preview p { font-size: 0.85rem; color: #bbb; max-width: 280px; }
 
-  /* ─── TOAST ─── */
   .toast-container {
     position: fixed;
     bottom: 1.5rem;
@@ -321,7 +312,6 @@
   .toast.info { border-color: var(--accent); }
   @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-  /* ─── CODE PREVIEW MODAL ─── */
   .modal-overlay {
     position: fixed; inset: 0; z-index: 9998;
     background: rgba(0,0,0,0.7);
@@ -380,7 +370,6 @@
     justify-content: flex-end;
   }
 
-  /* ─── SCROLLBAR ─── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -398,23 +387,22 @@
       <rect x="16" y="16" width="10" height="10" rx="3" fill="#fd79a8"/>
     </svg>
     <span>SiteForge</span><small>· AI</small>
-    <span class="badge">∞ builds</span>
+    <span class="badge">∞ unlimited</span>
   </div>
   <div style="display:flex;gap:0.5rem;align-items:center">
-    <span style="font-size:0.75rem;color:var(--text2)">No login · Unlimited</span>
+    <span style="font-size:0.75rem;color:var(--text2)">no login · no limits</span>
   </div>
 </header>
 
 <div class="app">
-  <!-- ─── EDITOR ─── -->
   <div class="editor-panel">
     <h2>Describe the website you want</h2>
-    <p>Tell the AI what to build. Be specific about layout, style, pages, and features. It generates a complete HTML file you can preview, edit, and download.</p>
+    <p>Tell the AI what to build. Be specific about layout, style, pages, and features. It generates a complete HTML file you can preview and download.</p>
 
     <div class="examples">
       <button data-prompt="A modern landing page for a SaaS product called 'FlowTrack' — dark theme, gradient hero, feature grid with 3 cards, testimonial carousel, and a sticky newsletter signup bar at the bottom. Responsive.">SaaS Landing Page</button>
       <button data-prompt="A personal portfolio site for a photographer. Minimal, light theme, full-screen hero with a background image placeholder, masonry gallery grid, about section, and contact form. Smooth scroll.">Photographer Portfolio</button>
-      <button data-prompt="A one-page restaurant website with a warm color palette (orange/cream), hero with food imagery, menu grid with prices, reservation form, and Google Maps embed placeholder. Mobile-first.">Restaurant Site</button>
+      <button data-prompt="A one-page restaurant website with a warm color palette (orange/cream), hero with food imagery, menu grid with prices, reservation form, and a Google Maps embed placeholder. Mobile-first.">Restaurant Site</button>
       <button data-prompt="A dashboard UI for a crypto tracker. Dark theme, sidebar navigation, 4 stat cards at top, a line chart placeholder, recent transactions table, and a small portfolio summary widget.">Crypto Dashboard</button>
     </div>
 
@@ -437,11 +425,10 @@
 
     <div id="status" class="status">
       <span class="spinner"></span>
-      <span id="statusText">Ready. Describe your site above and hit Generate.</span>
+      <span id="statusText">Ready. Describe your site and hit Generate.</span>
     </div>
   </div>
 
-  <!-- ─── PREVIEW ─── -->
   <div class="preview-panel">
     <div class="preview-toolbar">
       <span>⬡ Preview</span>
@@ -461,7 +448,6 @@
   </div>
 </div>
 
-<!-- ─── MODAL ─── -->
 <div class="modal-overlay" id="codeModal">
   <div class="modal">
     <div class="modal-header">
@@ -479,14 +465,13 @@
   </div>
 </div>
 
-<!-- ─── TOAST CONTAINER ─── -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ───────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────
 //  SiteForge AI — Browser-Based Website Generator
-//  Uses the built-in AI or a free API. No login.
-// ───────────────────────────────────────────────
+//  Uses Pollinations.ai free API. No login, no keys, no limits.
+// ──────────────────────────────────────────────────────────
 
 const promptInput      = document.getElementById('promptInput');
 const generateBtn      = document.getElementById('generateBtn');
@@ -512,7 +497,6 @@ let isGenerating       = false;
 document.querySelectorAll('.examples button').forEach(btn => {
   btn.addEventListener('click', () => {
     promptInput.value = btn.dataset.prompt;
-    promptInput.dispatchEvent(new Event('input'));
   });
 });
 
@@ -545,32 +529,32 @@ async function generate() {
   const animations  = document.getElementById('optAnimations').checked;
   const minimal     = document.getElementById('optMinimal').checked;
 
-  // Build system prompt
   let systemPrompt = 'You are a senior front-end developer. Generate a COMPLETE, PRODUCTION-READY single HTML file. ';
   systemPrompt += 'It must include ALL CSS (internal <style>) and ALL JavaScript (internal <script>). ';
   systemPrompt += 'Use modern HTML5 semantics, clean CSS with variables, and vanilla JS. ';
   systemPrompt += 'Make designs visually stunning, polished, and professional. ';
-  systemPrompt += 'Do NOT use external libraries (no Bootstrap, no jQuery, no Tailwind, no external CDN fonts other than one Google Font import if needed). ';
-  systemPrompt += 'All fonts, icons (use Unicode or SVG), and assets must be self-contained or use free CDN resources only if absolutely necessary. ';
-  systemPrompt += 'Use font-family system-ui or a single Google Font import at the top of the style block. ';
+  systemPrompt += 'Do NOT use external libraries like Bootstrap, jQuery, or Tailwind. ';
+  systemPrompt += 'Use font-family system-ui or one Google Font import at the top of the style block. ';
+  systemPrompt += 'For icons, use Unicode characters or inline SVG elements. ';
   systemPrompt += 'The file must render immediately when opened in a browser. ';
-  systemPrompt += 'Output ONLY the raw HTML. No markdown fences, no explanations, no backticks. Just the HTML document starting with <!DOCTYPE html>.';
+  systemPrompt += 'Output ONLY the raw HTML. No markdown fences, no backticks, no explanations. Just the HTML document starting with <!DOCTYPE html>.';
 
   if (responsive) systemPrompt += ' The design must be FULLY RESPONSIVE with mobile-first media queries.';
   if (darkMode) systemPrompt += ' Use a dark color scheme (dark background, light text) with a cohesive palette.';
-  if (!darkMode) systemPrompt += ' Use a light color scheme.';
-  if (animations) systemPrompt += ' Include subtle CSS animations (fade-in on scroll, hover effects, smooth transitions).';
+  if (!darkMode) systemPrompt += ' Use a light color scheme (light background, dark text).';
+  if (animations) systemPrompt += ' Include subtle CSS animations: fade-in on scroll, hover effects, smooth transitions.';
   if (minimal) systemPrompt += ' Keep it minimal — no extra ornamentation, clean typography, maximal whitespace.';
 
-  const fullPrompt = systemPrompt + '\n\nUser request: ' + prompt;
+  systemPrompt += '\n\nUser request: ' + prompt;
 
   setStatus('Generating your website...', 'generating');
   generateBtn.disabled = true;
   isGenerating = true;
 
   try {
-    const code = await callAI(fullPrompt);
-    if (!code || code.length < 200) throw new Error('Response too short — the AI may have failed.');
+    const code = await callAI(systemPrompt);
+    if (!code || code.length < 200) throw new Error('Response too short — AI may have failed.');
+    if (!code.includes('<html') && !code.includes('<!DOCTYPE')) throw new Error('Response does not contain valid HTML.');
 
     lastGeneratedCode = code;
     renderPreview(code);
@@ -588,75 +572,41 @@ async function generate() {
   }
 }
 
-// ─── AI CALL ───
+// ─── AI CALL — Pollinations (free, no key) ───
 async function callAI(prompt) {
-  // Strategy 1: Use browser's built-in AI if available (Chrome built-in AI / Prompt API)
-  if (window.ai && window.ai.languageModel) {
-    try {
-      const session = await window.ai.languageModel.create({ temperature: 0.7, maxTokens: 8192 });
-      const result = await session.prompt(prompt);
-      session.destroy();
-      return cleanResult(result);
-    } catch (e) {
-      console.warn('Built-in AI failed, trying fallback:', e);
-    }
+  // Pollinations OpenAI-compatible endpoint — no auth needed
+  const payload = {
+    model: 'mistral',  // fast & capable for code generation
+    messages: [
+      { role: 'system', content: 'You are a senior front-end developer. Output ONLY raw HTML code with no markdown, no backticks, no explanations.' },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: 8192,
+    temperature: 0.3
+  };
+
+  const response = await fetch('https://text.pollinations.ai/openai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => '');
+    throw new Error(`API error (${response.status}): ${errText || response.statusText}`);
   }
 
-  // Strategy 2: Use the Showrunner API (free tier, no key needed for basic usage)
-  // This uses a community AI endpoint that works out of the box
-  try {
-    const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        inputs: `<s>[INST] ${prompt} [/INST]`,
-        parameters: { max_new_tokens: 4096, temperature: 0.3, return_full_text: false }
-      })
-    });
-    if (response.ok) {
-      const data = await response.json();
-      if (data && data[0] && data[0].generated_text) return cleanResult(data[0].generated_text);
-    }
-  } catch (e) { console.warn('HuggingFace fallback failed:', e); }
+  const data = await response.json();
+  let text = data.choices?.[0]?.message?.content || '';
 
-  // Strategy 3: Use a free proxy to OpenAI-compatible API
-  // This uses a well-known free API gateway
-  const freeApis = [
-    {
-      url: 'https://text.pollinations.ai/openai',
-      body: { model: 'mistral', messages: [{ role: 'system', content: 'You are a senior web developer. Output ONLY raw HTML code with no explanations.' }, { role: 'user', content: prompt }], max_tokens: 4096 }
-    },
-    {
-      url: 'https://api.lemonfox.ai/v1/chat/completions',
-      headers: { 'Authorization': 'Bearer free', 'Content-Type': 'application/json' },
-      body: { model: 'gpt-4o-mini', messages: [{ role: 'system', content: 'You are a senior web developer. Output ONLY raw HTML code with no explanations.' }, { role: 'user', content: prompt }], max_tokens: 4096 }
-    }
-  ];
+  if (!text) throw new Error('Empty response from AI.');
 
-  for (const api of freeApis) {
-    try {
-      const resp = await fetch(api.url, {
-        method: 'POST',
-        headers: api.headers || { 'Content-Type': 'application/json' },
-        body: JSON.stringify(api.body)
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        let text = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
-        if (text) return cleanResult(text);
-      }
-    } catch (e) { console.warn('Free API failed:', e); }
-  }
-
-  // Strategy 4: Last resort — use a local generation fallback
-  throw new Error('Could not reach any AI backend. Check your internet connection or try again later.');
+  return cleanResult(text);
 }
 
 function cleanResult(text) {
-  // Remove markdown fences if present
   text = text.replace(/```html\n?/gi, '').replace(/```\n?/g, '');
   text = text.trim();
-  // Ensure it starts with doctype or html tag
   if (!text.startsWith('<!') && !text.startsWith('<html')) {
     text = '<!DOCTYPE html>\n' + text;
   }
@@ -667,11 +617,8 @@ function cleanResult(text) {
 function renderPreview(html) {
   emptyPreview.style.display = 'none';
   previewFrame.style.display = 'block';
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  previewFrame.src = url;
-  // Revoke old URL after a moment
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  // Use srcdoc instead of blob to avoid extra URL management
+  previewFrame.srcdoc = html;
 }
 
 // ─── VIEW CODE ───
@@ -692,7 +639,6 @@ copyCodeBtn.addEventListener('click', async () => {
     await navigator.clipboard.writeText(lastGeneratedCode);
     toast('Code copied to clipboard', 'success');
   } catch {
-    // Fallback
     const ta = document.createElement('textarea');
     ta.value = lastGeneratedCode;
     document.body.appendChild(ta);
@@ -724,7 +670,7 @@ downloadFromModal.addEventListener('click', () => {
   if (lastGeneratedCode) downloadCode(lastGeneratedCode);
 });
 
-// ─── STATUS HELPER ───
+// ─── STATUS ───
 function setStatus(msg, type) {
   statusText.textContent = msg;
   statusEl.className = 'status';
@@ -737,7 +683,11 @@ function toast(msg, type = 'info') {
   el.className = 'toast ' + type;
   el.textContent = msg;
   toastContainer.appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3500);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => el.remove(), 300);
+  }, 3500);
 }
 
 // ─── SHAKE ───
@@ -745,7 +695,8 @@ function shake(el) {
   el.style.animation = 'shake 0.4s ease';
   setTimeout(() => el.style.animation = '', 400);
 }
-const shakeKeyframes = `
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   20% { transform: translateX(-6px); }
@@ -753,8 +704,6 @@ const shakeKeyframes = `
   60% { transform: translateX(-4px); }
   80% { transform: translateX(4px); }
 }`;
-const styleSheet = document.createElement('style');
-styleSheet.textContent = shakeKeyframes;
 document.head.appendChild(styleSheet);
 
 // ─── KEYBOARD SHORTCUT ───
@@ -763,8 +712,8 @@ promptInput.addEventListener('keydown', (e) => {
 });
 
 // ─── INIT ───
-setStatus('Ready. Describe your site above and hit Generate.', '');
-console.log('SiteForge AI loaded. Describe a site and click Generate.');
+setStatus('Ready. Describe your site and hit Generate.', '');
+console.log('SiteForge AI loaded. Uses Pollinations.ai free API.');
 </script>
 </body>
 </html>
