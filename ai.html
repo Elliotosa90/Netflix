@@ -470,7 +470,7 @@
 <script>
 // ──────────────────────────────────────────────────────────
 //  SiteForge AI — Browser-Based Website Generator
-//  Uses Pollinations.ai free API. No login, no keys, no limits.
+//  Uses Pollinations.ai free API. No login, no keys.
 // ──────────────────────────────────────────────────────────
 
 const promptInput      = document.getElementById('promptInput');
@@ -529,30 +529,31 @@ async function generate() {
   const animations  = document.getElementById('optAnimations').checked;
   const minimal     = document.getElementById('optMinimal').checked;
 
-  let systemPrompt = 'You are a senior front-end developer. Generate a COMPLETE, PRODUCTION-READY single HTML file. ';
-  systemPrompt += 'It must include ALL CSS (internal <style>) and ALL JavaScript (internal <script>). ';
-  systemPrompt += 'Use modern HTML5 semantics, clean CSS with variables, and vanilla JS. ';
-  systemPrompt += 'Make designs visually stunning, polished, and professional. ';
-  systemPrompt += 'Do NOT use external libraries like Bootstrap, jQuery, or Tailwind. ';
-  systemPrompt += 'Use font-family system-ui or one Google Font import at the top of the style block. ';
-  systemPrompt += 'For icons, use Unicode characters or inline SVG elements. ';
-  systemPrompt += 'The file must render immediately when opened in a browser. ';
-  systemPrompt += 'Output ONLY the raw HTML. No markdown fences, no backticks, no explanations. Just the HTML document starting with <!DOCTYPE html>.';
+  // Build prompt for the AI
+  let fullPrompt = 'You are a senior front-end developer. Generate a COMPLETE, PRODUCTION-READY single HTML file. ';
+  fullPrompt += 'It must include ALL CSS (internal <style>) and ALL JavaScript (internal <script>). ';
+  fullPrompt += 'Use modern HTML5 semantics, clean CSS with variables, and vanilla JS. ';
+  fullPrompt += 'Make the design visually stunning, polished, and professional-grade. ';
+  fullPrompt += 'Do NOT use external libraries like Bootstrap, jQuery, or Tailwind. ';
+  fullPrompt += 'Use font-family system-ui or one Google Font import at the top of the style block. ';
+  fullPrompt += 'For icons, use Unicode characters or inline SVG. ';
+  fullPrompt += 'The file must render immediately when opened in a browser. ';
+  fullPrompt += 'Output ONLY the raw HTML. No markdown fences, no backticks, no code blocks, no explanations. Just the HTML document starting with <!DOCTYPE html>.';
 
-  if (responsive) systemPrompt += ' The design must be FULLY RESPONSIVE with mobile-first media queries.';
-  if (darkMode) systemPrompt += ' Use a dark color scheme (dark background, light text) with a cohesive palette.';
-  if (!darkMode) systemPrompt += ' Use a light color scheme (light background, dark text).';
-  if (animations) systemPrompt += ' Include subtle CSS animations: fade-in on scroll, hover effects, smooth transitions.';
-  if (minimal) systemPrompt += ' Keep it minimal — no extra ornamentation, clean typography, maximal whitespace.';
+  if (responsive) fullPrompt += ' The design must be FULLY RESPONSIVE with mobile-first media queries.';
+  if (darkMode) fullPrompt += ' Use a dark color scheme (dark background, light text) with a cohesive palette.';
+  if (!darkMode) fullPrompt += ' Use a light color scheme (light background, dark text).';
+  if (animations) fullPrompt += ' Include subtle CSS animations: fade-in on scroll, hover effects, smooth transitions.';
+  if (minimal) fullPrompt += ' Keep it minimal — clean typography, lots of whitespace, no ornamentation.';
 
-  systemPrompt += '\n\nUser request: ' + prompt;
+  fullPrompt += '\n\nUser request: ' + prompt;
 
   setStatus('Generating your website...', 'generating');
   generateBtn.disabled = true;
   isGenerating = true;
 
   try {
-    const code = await callAI(systemPrompt);
+    const code = await callAI(fullPrompt);
     if (!code || code.length < 200) throw new Error('Response too short — AI may have failed.');
     if (!code.includes('<html') && !code.includes('<!DOCTYPE')) throw new Error('Response does not contain valid HTML.');
 
@@ -572,36 +573,52 @@ async function generate() {
   }
 }
 
-// ─── AI CALL — Pollinations (free, no key) ───
+// ─── AI CALL ───
 async function callAI(prompt) {
-  // Pollinations OpenAI-compatible endpoint — no auth needed
-  const payload = {
-    model: 'mistral',  // fast & capable for code generation
-    messages: [
-      { role: 'system', content: 'You are a senior front-end developer. Output ONLY raw HTML code with no markdown, no backticks, no explanations.' },
-      { role: 'user', content: prompt }
-    ],
-    max_tokens: 8192,
-    temperature: 0.3
-  };
+  // Strategy 1: POST to Pollinations OpenAI-compatible endpoint
+  try {
+    const payload = {
+      model: 'openai',   // "openai" = openai-fast, confirmed working on anonymous tier
+      messages: [
+        { role: 'system', content: 'You are a senior front-end developer. Output ONLY raw HTML code. No markdown, no backticks, no explanations.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 8192,
+      temperature: 0.3
+    };
 
-  const response = await fetch('https://text.pollinations.ai/openai', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+    const response = await fetch('https://text.pollinations.ai/openai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-  if (!response.ok) {
-    const errText = await response.text().catch(() => '');
-    throw new Error(`API error (${response.status}): ${errText || response.statusText}`);
+    if (response.ok) {
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content || '';
+      if (text && text.length > 100) return cleanResult(text);
+    }
+  } catch (e) {
+    console.warn('POST endpoint failed, trying GET fallback:', e);
   }
 
-  const data = await response.json();
-  let text = data.choices?.[0]?.message?.content || '';
+  // Strategy 2: GET endpoint (simpler, also free)
+  // The GET endpoint accepts a prompt directly in the URL
+  try {
+    const url = 'https://text.pollinations.ai/' + encodeURIComponent(
+      'Generate a complete single HTML file website. ' + prompt +
+      ' Respond with ONLY the raw HTML code starting with <!DOCTYPE html>. No markdown, no backticks, no explanations.'
+    );
+    const response = await fetch(url);
+    if (response.ok) {
+      let text = await response.text();
+      if (text && text.length > 100) return cleanResult(text);
+    }
+  } catch (e) {
+    console.warn('GET endpoint failed:', e);
+  }
 
-  if (!text) throw new Error('Empty response from AI.');
-
-  return cleanResult(text);
+  throw new Error('Could not reach AI backend. Make sure you have an internet connection and try again. The Pollinations API may be temporarily overloaded.');
 }
 
 function cleanResult(text) {
@@ -617,7 +634,6 @@ function cleanResult(text) {
 function renderPreview(html) {
   emptyPreview.style.display = 'none';
   previewFrame.style.display = 'block';
-  // Use srcdoc instead of blob to avoid extra URL management
   previewFrame.srcdoc = html;
 }
 
@@ -713,7 +729,7 @@ promptInput.addEventListener('keydown', (e) => {
 
 // ─── INIT ───
 setStatus('Ready. Describe your site and hit Generate.', '');
-console.log('SiteForge AI loaded. Uses Pollinations.ai free API.');
+console.log('SiteForge AI loaded · backend: Pollinations.ai');
 </script>
 </body>
 </html>
